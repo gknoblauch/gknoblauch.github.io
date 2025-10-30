@@ -13,7 +13,6 @@
     "@astrojs/rss": "^4.0.7",
     "@astrojs/sitemap": "^3.1.6",
     "@astrojs/solid-js": "^4.4.0",
-    "@astrojs/svelte": "^7.2.0",
     "@iconify-json/ri": "^1.1.21",
     "@rive-app/canvas": "^2.19.3",
     "astro": "^5.14.5",
@@ -26,12 +25,12 @@
     "mdast-util-to-string": "^4.0.0",
     "motion": "^10.18.0",
     "reading-time": "^1.5.0",
-    "solid-js": "^1.9.5",
-    "svelte": "^4.2.18"
+    "solid-js": "^1.9.5"
   },
   "devDependencies": {
+    "@astrojs/svelte": "^7.2.1",
     "@types/d3": "^7.4.3",
-    "@unocss/astro": "^0.61.3",
+    "@unocss/astro": "^66.5.4",
     "@unocss/postcss": "^0.61.3",
     "@unocss/preset-uno": "^0.61.3",
     "@unocss/reset": "^0.61.3",
@@ -39,6 +38,7 @@
     "markdown-it": "^14.1.0",
     "motion": "^10.18.0",
     "sanitize-html": "^2.13.0",
-    "unocss": "^0.61.3"
+    "svelte": "^5.43.0",
+    "unocss": "^66.5.4"
   }
 }
