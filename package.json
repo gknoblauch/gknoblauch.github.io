@@ -16,7 +16,7 @@
     "@astrojs/svelte": "^7.2.1",
     "@iconify-json/ri": "^1.2.6",
     "@rive-app/canvas": "^2.32.0",
-    "astro": "^5.15.2",
+    "astro": "^5.15.6",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",
     "d3": "^7.9.0",
