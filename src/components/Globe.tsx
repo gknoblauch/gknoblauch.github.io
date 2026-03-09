@@ -1,4 +1,4 @@
-import { onMount } from "solid-js";
+import { onCleanup, onMount } from "solid-js";
 import * as d3 from "d3";
 import worldData from "../lib/world.json";
 
@@ -19,7 +19,7 @@ const GlobeComponent = () => {
     "Germany",
     "Austria",
     "Czech Republic",
-    "Neatherlands",
+    "Netherlands",
     "Argentina",
     "Uruguay",
     "Colombia",
@@ -80,12 +80,14 @@ const GlobeComponent = () => {
       .style("stroke-width", 0.3)
       .style("opacity", 0.8);
 
-    d3.timer(() => {
+    const timer = d3.timer(() => {
       const rotate = projection.rotate();
       const k = sensitivity / projection.scale();
       projection.rotate([rotate[0] - 1 * k, rotate[1]]);
       svg.selectAll("path").attr("d", (d: any) => pathGenerator(d as any));
     }, 200);
+
+    onCleanup(() => timer.stop());
   });
 
   return (
