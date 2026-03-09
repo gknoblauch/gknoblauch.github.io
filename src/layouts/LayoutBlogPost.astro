@@ -1,25 +1,31 @@
 ---
 import { formatDate } from "../lib/helpers";
-import type { MarkdownLayoutProps } from "astro";
 import BasicLayout from "./BasicLayout.astro";
 
-type Props = MarkdownLayoutProps<{
+interface Props {
   title: string;
   description: string;
-  pubDate: string;
-  minutesRead: string;
-}>;
+  pubDate: Date;
+  minutesRead?: string;
+}
 
 const { slug } = Astro.params;
-const { frontmatter } = Astro.props;
+const { title, description, pubDate, minutesRead } = Astro.props;
 ---
 
 <BasicLayout
-  frontmatter={frontmatter}
   slug={slug}
   page="blog"
-  title={`Greg Knoblauch - ${frontmatter.title}`}
-  description={frontmatter.description}
+  title={`Greg Knoblauch - ${title}`}
+  description={description}
+  frontmatter={{
+    file: "",
+    url: undefined,
+    title,
+    description,
+    pubDate: pubDate?.toISOString() || "",
+    minutesRead: minutesRead || "",
+  }}
 >
   <main class="mx-auto max-w-3xl w-full h-screen p-8 text-neutral-100">
     <a
@@ -28,10 +34,10 @@ const { frontmatter } = Astro.props;
       >Back</a
     >
     <div class="my-10">
-      <h1 class="text-5xl font-semibold">{frontmatter.title}</h1>
+      <h1 class="text-5xl font-semibold">{title}</h1>
       <div class="flex justify-between pt-4 text-gray-500 text-sm">
-        <p>{formatDate(new Date(frontmatter.pubDate))}</p>
-        <p>{frontmatter.minutesRead}</p>
+        <p>{formatDate(pubDate)}</p>
+        <p>{minutesRead}</p>
       </div>
     </div>
     <article class="prose prose-p:text-red-500 prose-slate prose-invert">
