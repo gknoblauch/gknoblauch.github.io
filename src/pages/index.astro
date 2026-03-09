@@ -7,11 +7,10 @@ import TimeZone from "../components/TimeZoneCard.astro";
 import AboutMe from "../components/AboutMe.astro";
 import Now from "../components/Now.astro";
 import Globe from "../components/Globe";
-import MyStack from "../components/MyStack.astro";
 ---
 
 <script>
-  import { stagger, spring, timeline, type TimelineDefinition } from "motion";
+  import { stagger, animate } from "motion";
   import { loaderAnimation } from "../lib/constants";
   const cards = document.querySelectorAll(".card");
 
@@ -24,12 +23,12 @@ import MyStack from "../components/MyStack.astro";
         at: "-0.1",
         duration: 0.4,
         delay: stagger(0.3),
-        easing: spring({ velocity: 100, stiffness: 50, damping: 10 }),
+        easing: "ease-out",
       },
     ],
   ];
 
-  timeline(sequence as TimelineDefinition);
+  animate(sequence as any);
 </script>
 
 <Layout
