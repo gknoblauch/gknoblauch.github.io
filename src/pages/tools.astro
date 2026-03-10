@@ -1,0 +1,411 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<script>
+  import { animate } from "motion";
+  import { loaderAnimation } from "../lib/constants";
+  animate([loaderAnimation] as any);
+
+  const KM_PER_MILE = 1.60934;
+  let coffeeRatio = 15;
+
+  function parsePace(val: string): number | null {
+    const parts = val.split(":");
+    if (parts.length !== 2) return null;
+    const mins = parseInt(parts[0], 10);
+    const secs = parseInt(parts[1], 10);
+    if (isNaN(mins) || isNaN(secs) || secs >= 60 || secs < 0 || mins < 0) return null;
+    return mins + secs / 60;
+  }
+
+  function formatPace(decimalMins: number): string {
+    const mins = Math.floor(decimalMins);
+    const secs = Math.round((decimalMins - mins) * 60);
+    if (secs === 60) return `${mins + 1}:00`;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  }
+
+  function formatTime(totalSecs: number): string {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = Math.round(totalSecs % 60);
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  // --- Pace Converter ---
+  const inputKph = document.getElementById("input-kph") as HTMLInputElement;
+  const inputPaceKm = document.getElementById("input-pace-km") as HTMLInputElement;
+  const resultKph = document.getElementById("result-kph") as HTMLElement;
+  const resultPaceKm = document.getElementById("result-pace-km") as HTMLElement;
+  const crossResults = document.getElementById("cross-results") as HTMLElement;
+  const crossKph = document.getElementById("cross-kph") as HTMLElement;
+  const crossMph = document.getElementById("cross-mph") as HTMLElement;
+  const crossPaceKm = document.getElementById("cross-pace-km") as HTMLElement;
+  const crossPaceMile = document.getElementById("cross-pace-mile") as HTMLElement;
+
+  function showCrossResults(kph: number) {
+    const mph = kph / KM_PER_MILE;
+    const paceKmDecMin = 60 / kph;
+    const paceMileDecMin = 60 / mph;
+    crossKph.textContent = kph.toFixed(2) + " km/h";
+    crossMph.textContent = mph.toFixed(2) + " mph";
+    crossPaceKm.textContent = formatPace(paceKmDecMin) + " /km";
+    crossPaceMile.textContent = formatPace(paceMileDecMin) + " /mile";
+    crossResults.classList.remove("opacity-0", "pointer-events-none");
+    crossResults.classList.add("opacity-100");
+  }
+
+  function hideCrossResults() {
+    crossResults.classList.add("opacity-0", "pointer-events-none");
+    crossResults.classList.remove("opacity-100");
+  }
+
+  inputKph.addEventListener("input", () => {
+    inputPaceKm.value = "";
+    resultPaceKm.textContent = "—";
+    const kph = parseFloat(inputKph.value);
+    if (!inputKph.value || isNaN(kph) || kph <= 0) {
+      resultKph.textContent = "—";
+      hideCrossResults();
+      return;
+    }
+    const mph = kph / KM_PER_MILE;
+    resultKph.textContent = mph.toFixed(2) + " mph";
+    showCrossResults(kph);
+  });
+
+  inputPaceKm.addEventListener("input", () => {
+    inputKph.value = "";
+    resultKph.textContent = "—";
+    const paceDecMin = parsePace(inputPaceKm.value);
+    if (paceDecMin === null || paceDecMin <= 0) {
+      resultPaceKm.textContent = "—";
+      hideCrossResults();
+      return;
+    }
+    const kph = 60 / paceDecMin;
+    const paceMileDecMin = paceDecMin * KM_PER_MILE;
+    resultPaceKm.textContent = formatPace(paceMileDecMin) + " /mile";
+    showCrossResults(kph);
+  });
+
+  // --- Race Time Estimator ---
+  const racePaceInput = document.getElementById("race-pace") as HTMLInputElement;
+  const raceDistSelect = document.getElementById("race-dist") as HTMLSelectElement;
+  const raceResult = document.getElementById("race-result") as HTMLElement;
+  const raceSpeed = document.getElementById("race-speed") as HTMLElement;
+
+  function calcRaceTime() {
+    const paceDecMin = parsePace(racePaceInput.value);
+    const dist = parseFloat(raceDistSelect.value);
+    if (paceDecMin === null || paceDecMin <= 0 || isNaN(dist)) {
+      raceResult.textContent = "—";
+      raceSpeed.textContent = "";
+      return;
+    }
+    const totalSecs = paceDecMin * 60 * dist;
+    raceResult.textContent = formatTime(totalSecs);
+    const kph = 60 / paceDecMin;
+    const mph = kph / KM_PER_MILE;
+    raceSpeed.textContent = `${kph.toFixed(2)} km/h · ${mph.toFixed(2)} mph`;
+  }
+
+  racePaceInput.addEventListener("input", calcRaceTime);
+  raceDistSelect.addEventListener("change", calcRaceTime);
+
+  // --- Coffee Calculator ---
+  const coffeeWaterInput = document.getElementById("coffee-water") as HTMLInputElement;
+  const coffeeGramsInput = document.getElementById("coffee-grams") as HTMLInputElement;
+  const coffeeGramsResult = document.getElementById("coffee-grams-result") as HTMLElement;
+  const coffeeWaterResult = document.getElementById("coffee-water-result") as HTMLElement;
+
+  function formatWater(ml: number): string {
+    if (ml >= 1000) return (ml / 1000).toFixed(2).replace(/\.?0+$/, "") + "L";
+    return Math.round(ml) + "ml";
+  }
+
+  function calcCoffeeFromWater() {
+    const water = parseFloat(coffeeWaterInput.value);
+    if (!coffeeWaterInput.value || isNaN(water) || water <= 0) {
+      coffeeGramsResult.textContent = "—";
+      return;
+    }
+    const grams = water / coffeeRatio;
+    coffeeGramsResult.textContent = grams % 1 === 0 ? grams + "g" : grams.toFixed(1) + "g";
+  }
+
+  function calcCoffeeFromGrams() {
+    const grams = parseFloat(coffeeGramsInput.value);
+    if (!coffeeGramsInput.value || isNaN(grams) || grams <= 0) {
+      coffeeWaterResult.textContent = "—";
+      return;
+    }
+    const water = grams * coffeeRatio;
+    coffeeWaterResult.textContent = formatWater(water);
+  }
+
+  coffeeWaterInput.addEventListener("input", () => {
+    coffeeGramsInput.value = "";
+    coffeeWaterResult.textContent = "—";
+    calcCoffeeFromWater();
+  });
+
+  coffeeGramsInput.addEventListener("input", () => {
+    coffeeWaterInput.value = "";
+    coffeeGramsResult.textContent = "—";
+    calcCoffeeFromGrams();
+  });
+
+  // Preset buttons
+  document.querySelectorAll<HTMLButtonElement>(".preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const ml = btn.dataset.ml!;
+      coffeeWaterInput.value = ml;
+      coffeeGramsInput.value = "";
+      coffeeWaterResult.textContent = "—";
+      calcCoffeeFromWater();
+    });
+  });
+
+  // Ratio rows
+  const ratioRows = document.querySelectorAll<HTMLElement>(".ratio-row");
+  ratioRows.forEach((row) => {
+    row.addEventListener("click", () => {
+      coffeeRatio = parseInt(row.dataset.ratio!, 10);
+      ratioRows.forEach((r) => {
+        r.classList.remove("border-primary-500", "bg-primary-500/10");
+        r.classList.add("border-neutral-700");
+      });
+      row.classList.remove("border-neutral-700");
+      row.classList.add("border-primary-500", "bg-primary-500/10");
+      // Update badge
+      const badge = document.getElementById("ratio-badge");
+      if (badge) badge.textContent = String(coffeeRatio);
+      // Re-run whichever has a value
+      if (coffeeWaterInput.value) calcCoffeeFromWater();
+      else if (coffeeGramsInput.value) calcCoffeeFromGrams();
+    });
+  });
+
+  // Accordion toggle
+  const accordionToggle = document.getElementById("accordion-toggle");
+  const accordionPanel = document.getElementById("accordion-panel");
+  accordionToggle?.addEventListener("click", () => {
+    const isHidden = accordionPanel!.classList.contains("hidden");
+    accordionPanel!.classList.toggle("hidden", !isHidden);
+    accordionToggle.textContent = isHidden ? "Hide ratio presets ▲" : "Show ratio presets ▼";
+  });
+</script>
+
+<Layout title="Tools — Greg Knoblauch" description="Running and coffee calculators">
+  <main class="text-white max-w-5xl mx-auto px-4 py-8">
+    <a
+      href="/"
+      class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+    >
+      ← Back
+    </a>
+
+    <h1 class="text-4xl font-black mb-1">Tools</h1>
+    <p class="text-neutral-400 mb-8">Handy calculators for running and coffee.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- LEFT: Running -->
+      <div class="flex flex-col gap-6">
+
+        <!-- Pace Converter -->
+        <div class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
+          <h2 class="text-xl font-bold mb-4">Pace Converter</h2>
+
+          <!-- Speed row -->
+          <div class="mb-4">
+            <label class="block text-sm text-neutral-400 mb-1">Speed (km/h)</label>
+            <div class="flex items-center gap-3">
+              <input
+                id="input-kph"
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="e.g. 12"
+                class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg w-36"
+              />
+              <span class="text-neutral-400">→</span>
+              <span id="result-kph" class="text-primary-500 font-bold text-lg">—</span>
+            </div>
+          </div>
+
+          <!-- Pace row -->
+          <div class="mb-4">
+            <label class="block text-sm text-neutral-400 mb-1">Pace (min:ss /km)</label>
+            <div class="flex items-center gap-3">
+              <input
+                id="input-pace-km"
+                type="text"
+                placeholder="e.g. 5:00"
+                class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg w-36"
+              />
+              <span class="text-neutral-400">→</span>
+              <span id="result-pace-km" class="text-primary-500 font-bold text-lg">—</span>
+            </div>
+          </div>
+
+          <!-- Cross-results panel -->
+          <div
+            id="cross-results"
+            class="opacity-0 pointer-events-none transition-opacity duration-200 mt-4 bg-darkslate-700 rounded-md p-4 border border-neutral-700 grid grid-cols-2 gap-2 text-sm"
+          >
+            <div>
+              <span class="text-neutral-400">Speed</span><br />
+              <span id="cross-kph" class="text-primary-500 font-bold">—</span><br />
+              <span id="cross-mph" class="text-primary-500 font-bold">—</span>
+            </div>
+            <div>
+              <span class="text-neutral-400">Pace</span><br />
+              <span id="cross-pace-km" class="text-primary-500 font-bold">—</span><br />
+              <span id="cross-pace-mile" class="text-primary-500 font-bold">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Race Time Estimator -->
+        <div class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
+          <h2 class="text-xl font-bold mb-4">Race Time Estimator</h2>
+          <div class="flex flex-wrap gap-3 mb-4 items-end">
+            <div>
+              <label class="block text-sm text-neutral-400 mb-1">Pace (min:ss /km)</label>
+              <input
+                id="race-pace"
+                type="text"
+                placeholder="e.g. 5:00"
+                class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg w-36"
+              />
+            </div>
+            <div>
+              <label class="block text-sm text-neutral-400 mb-1">Distance</label>
+              <select
+                id="race-dist"
+                class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg"
+              >
+                <option value="5">5K</option>
+                <option value="10">10K</option>
+                <option value="21.0975">Half Marathon</option>
+                <option value="42.195" selected>Marathon</option>
+              </select>
+            </div>
+          </div>
+          <div id="race-result" class="text-5xl font-black text-primary-500 mb-1">—</div>
+          <div id="race-speed" class="text-neutral-400 text-sm"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Coffee -->
+      <div class="flex flex-col gap-6">
+
+        <!-- Coffee Calculator -->
+        <div class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">Coffee Calculator</h2>
+            <div class="bg-darkslate-700 border border-primary-500/30 rounded-lg px-3 py-1 text-sm text-primary-500 font-mono ml-4">
+              1:<span id="ratio-badge">15</span> — Golden Ratio
+            </div>
+          </div>
+
+          <!-- Water → Grams -->
+          <div class="mb-5">
+            <label class="block text-sm text-neutral-400 mb-1">Water (ml)</label>
+            <input
+              id="coffee-water"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="e.g. 300"
+              class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg w-36"
+            />
+            <div class="mt-2 text-sm text-neutral-400">
+              Coffee needed: <span id="coffee-grams-result" class="text-primary-500 font-bold text-lg">—</span>
+            </div>
+          </div>
+
+          <!-- Quick presets -->
+          <div class="flex flex-wrap gap-2 mb-5">
+            <button
+              class="preset-btn text-sm shadow-custom shadow-primary-500 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] text-gray-200 px-3 py-1.5 border border-primary-500 hover:text-primary-500 transition-colors duration-100 ease-in-out bg-gray-900 rounded-lg cursor-pointer"
+              data-ml="200">200ml</button>
+            <button
+              class="preset-btn text-sm shadow-custom shadow-primary-500 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] text-gray-200 px-3 py-1.5 border border-primary-500 hover:text-primary-500 transition-colors duration-100 ease-in-out bg-gray-900 rounded-lg cursor-pointer"
+              data-ml="300">300ml</button>
+            <button
+              class="preset-btn text-sm shadow-custom shadow-primary-500 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] text-gray-200 px-3 py-1.5 border border-primary-500 hover:text-primary-500 transition-colors duration-100 ease-in-out bg-gray-900 rounded-lg cursor-pointer"
+              data-ml="400">400ml</button>
+            <button
+              class="preset-btn text-sm shadow-custom shadow-primary-500 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] text-gray-200 px-3 py-1.5 border border-primary-500 hover:text-primary-500 transition-colors duration-100 ease-in-out bg-gray-900 rounded-lg cursor-pointer"
+              data-ml="500">500ml</button>
+            <button
+              class="preset-btn text-sm shadow-custom shadow-primary-500 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] text-gray-200 px-3 py-1.5 border border-primary-500 hover:text-primary-500 transition-colors duration-100 ease-in-out bg-gray-900 rounded-lg cursor-pointer"
+              data-ml="1000">1L</button>
+          </div>
+
+          <!-- Grams → Water (reverse) -->
+          <div class="border-t border-neutral-700 pt-4">
+            <label class="block text-sm text-neutral-400 mb-1">Coffee (grams)</label>
+            <input
+              id="coffee-grams"
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder="e.g. 20"
+              class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg w-36"
+            />
+            <div class="mt-2 text-sm text-neutral-400">
+              Water needed: <span id="coffee-water-result" class="text-primary-500 font-bold text-lg">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ratio Presets Accordion -->
+        <div class="bg-darkslate-500 rounded-lg border border-neutral-700 overflow-hidden">
+          <button
+            id="accordion-toggle"
+            class="w-full text-left px-6 py-4 text-sm text-neutral-400 hover:text-white transition-colors duration-100 cursor-pointer"
+          >
+            Show ratio presets ▼
+          </button>
+          <div id="accordion-panel" class="hidden px-6 pb-4 flex flex-col gap-2">
+            <div
+              class="ratio-row border border-neutral-700 rounded-md px-4 py-3 cursor-pointer hover:border-neutral-500 transition-colors duration-100 flex justify-between items-center"
+              data-ratio="14"
+            >
+              <span class="font-medium">1:14</span>
+              <span class="text-neutral-400 text-sm">Strong</span>
+            </div>
+            <div
+              class="ratio-row border border-primary-500 bg-primary-500/10 rounded-md px-4 py-3 cursor-pointer hover:border-primary-500 transition-colors duration-100 flex justify-between items-center"
+              data-ratio="15"
+            >
+              <span class="font-medium">1:15</span>
+              <span class="text-primary-500 text-sm font-bold">Golden (default)</span>
+            </div>
+            <div
+              class="ratio-row border border-neutral-700 rounded-md px-4 py-3 cursor-pointer hover:border-neutral-500 transition-colors duration-100 flex justify-between items-center"
+              data-ratio="16"
+            >
+              <span class="font-medium">1:16</span>
+              <span class="text-neutral-400 text-sm">Light</span>
+            </div>
+            <div
+              class="ratio-row border border-neutral-700 rounded-md px-4 py-3 cursor-pointer hover:border-neutral-500 transition-colors duration-100 flex justify-between items-center"
+              data-ratio="17"
+            >
+              <span class="font-medium">1:17</span>
+              <span class="text-neutral-400 text-sm">Very Light</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</Layout>
