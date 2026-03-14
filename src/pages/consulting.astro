@@ -1,0 +1,110 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<script>
+  import { animate } from "motion";
+  import { loaderAnimation } from "../lib/constants";
+  animate([loaderAnimation] as any);
+</script>
+
+<Layout title="Consulting — Greg Knoblauch" description="Staff-level software engineering consulting for fintech, platform, and distributed systems">
+  <main class="w-screen h-screen overflow-y-auto flex flex-col justify-start items-start text-white">
+    <div class="max-w-3xl mx-auto w-full px-8 py-8">
+      <a
+        href="/"
+        class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+      >
+        ← Back
+      </a>
+
+      <!-- Hero -->
+      <div class="flex items-end gap-4 mb-10">
+        <img
+          src="/og-image.png"
+          alt="Greg Knoblauch"
+          class="w-24 h-24 rounded-lg object-cover select-none pointer-events-none"
+        />
+        <div class="pb-2">
+          <h1 class="text-4xl font-black mb-1">Consulting</h1>
+          <p class="text-neutral-400 text-lg">Staff-level engineering expertise, on demand.</p>
+        </div>
+      </div>
+
+    <!-- Intro -->
+    <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6 mb-6">
+      <p class="text-neutral-300 leading-relaxed">
+        I'm Greg — a Staff Software Engineer with 8+ years building and scaling distributed systems
+        at companies like <span class="text-white font-semibold">Block (Square)</span>,
+        <span class="text-white font-semibold">Bolt Financial</span>, and
+        <span class="text-white font-semibold">Intuit</span>. I work with teams that need
+        senior engineering judgment without the overhead of a full-time hire.
+      </p>
+    </div>
+
+    <!-- Services -->
+    <h2 class="text-2xl font-bold mb-4">What I offer</h2>
+    <div class="flex flex-col gap-4 mb-10">
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">API & Third-Party Integrations</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Need two systems talking to each other? I take on focused, time-boxed engagements: wire
+          up an API, build an integration, ship a specific feature. You know what needs to get
+          done — I'll get it done.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Architecture & System Design</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Design reviews, tech stack evaluations, and hands-on guidance for distributed systems and
+          platform infrastructure. I help teams make confident architectural decisions before the
+          expensive mistakes happen.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Platform & Infrastructure Modernization</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Aging infrastructure, a growing monolith, scaling pain — I help you find a pragmatic path
+          forward. No big-bang rewrites, no unnecessary churn. Just a clear plan and help
+          executing it.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Engineering Leadership & Staff Augmentation</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Staff-level support when you need more than code. Technical mentorship, cross-functional
+          alignment, and help driving complex projects to completion.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">AI Tooling Adoption</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Practical guidance on integrating AI into your engineering workflow. I help teams skip
+          the hype, evaluate what's actually useful, and adopt tooling that makes a real difference.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div class="bg-darkslate-500 border border-primary-500/40 rounded-lg p-6 text-center">
+      <h2 class="text-xl font-bold mb-2">Interested in working together?</h2>
+      <p class="text-neutral-400 text-sm mb-4">
+        I'm available for project-based and retainer engagements. Let's talk.
+      </p>
+      <a
+        href="mailto:greg@knoblauch.ca"
+        class="inline-block bg-primary-500 hover:bg-primary-400 text-white font-semibold rounded-lg px-6 py-3 transition-colors duration-100"
+      >
+        Get in touch
+      </a>
+    </div>
+
+    </div>
+  </main>
+</Layout>
