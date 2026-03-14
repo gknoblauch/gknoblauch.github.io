@@ -1,0 +1,122 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<script>
+  import { animate } from "motion";
+  import { loaderAnimation } from "../lib/constants";
+  animate([loaderAnimation] as any);
+</script>
+
+<Layout title="Consulting — Greg Knoblauch" description="Staff-level software engineering consulting for fintech, platform, and distributed systems">
+  <main class="text-white max-w-3xl mx-auto px-4 py-8">
+    <a
+      href="/"
+      class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+    >
+      ← Back
+    </a>
+
+    <h1 class="text-4xl font-black mb-2">Consulting</h1>
+    <p class="text-neutral-400 mb-10 text-lg">
+      Staff-level engineering expertise, on demand.
+    </p>
+
+    <!-- Intro -->
+    <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6 mb-6">
+      <p class="text-neutral-300 leading-relaxed">
+        I'm Greg — a Staff Software Engineer with 8+ years building and scaling distributed systems
+        at companies like <span class="text-white font-semibold">Block (Square)</span>,
+        <span class="text-white font-semibold">Bolt Financial</span>, and
+        <span class="text-white font-semibold">Intuit</span>. I work with teams that need
+        senior engineering judgment without the overhead of a full-time hire.
+      </p>
+    </div>
+
+    <!-- Services -->
+    <h2 class="text-2xl font-bold mb-4">What I offer</h2>
+    <div class="flex flex-col gap-4 mb-10">
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Architecture & System Design</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Design reviews, tech stack evaluation, and hands-on architecture for distributed systems,
+          APIs, and platform infrastructure. I've tackled everything from noisy-neighbour isolation
+          and load distribution to Kubernetes migrations and active-active resilience.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Platform & Infrastructure Modernization</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Helping teams move off aging infrastructure — legacy Rails apps, monolith decomposition,
+          workflow orchestration (Temporal), and autoscaling strategies. I've reduced infrastructure
+          footprints by 80% and cut deployment times in half.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Engineering Leadership & Team Coaching</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Embedded staff-level IC support: technical mentorship, cross-functional coordination
+          (Eng / PM / Design), and delivery ownership for complex projects. I'm particularly
+          effective in teams navigating ambiguity or scaling pains.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">AI Tooling Adoption</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          An early advocate for AI-assisted development, I've run workshops, introduced tooling,
+          and brought best practices from cross-org working groups to help engineering teams
+          meaningfully accelerate with AI — without the hype.
+        </p>
+      </div>
+
+      <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-primary-500 mb-2">Compliance & Risk Systems</h3>
+        <p class="text-neutral-300 text-sm leading-relaxed">
+          Experience building compliance-critical systems including CCPA data rights infrastructure,
+          risk workflow automation, and fraud/approval pipelines. I understand the constraints that
+          come with regulated product areas.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Industries -->
+    <h2 class="text-2xl font-bold mb-4">Where I've worked</h2>
+    <div class="flex flex-wrap gap-2 mb-10">
+      {["Fintech", "Payments", "E-commerce", "Tax Software", "SaaS"].map((tag) => (
+        <span class="bg-darkslate-500 border border-neutral-700 text-neutral-300 text-sm rounded-lg px-3 py-1">
+          {tag}
+        </span>
+      ))}
+    </div>
+
+    <!-- Tech -->
+    <h2 class="text-2xl font-bold mb-4">Tech I work with</h2>
+    <div class="flex flex-wrap gap-2 mb-10">
+      {["Golang", "Python", "Java", "Kotlin", "Spring Boot", "Kubernetes", "AWS", "Terraform", "Temporal", "Rails"].map((tech) => (
+        <span class="bg-darkslate-500 border border-primary-500/30 text-primary-500 text-sm rounded-lg px-3 py-1 font-mono">
+          {tech}
+        </span>
+      ))}
+    </div>
+
+    <!-- CTA -->
+    <div class="bg-darkslate-500 border border-primary-500/40 rounded-lg p-6 text-center">
+      <h2 class="text-xl font-bold mb-2">Interested in working together?</h2>
+      <p class="text-neutral-400 text-sm mb-4">
+        I'm available for project-based and retainer engagements. Let's talk.
+      </p>
+      <a
+        href="mailto:greg@knoblauch.ca"
+        class="inline-block bg-primary-500 hover:bg-primary-400 text-white font-semibold rounded-lg px-6 py-3 transition-colors duration-100"
+      >
+        Get in touch
+      </a>
+    </div>
+
+  </main>
+</Layout>
