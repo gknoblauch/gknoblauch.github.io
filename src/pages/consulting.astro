@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Image } from "astro:assets";
 ---
 
 <script>
@@ -9,18 +10,28 @@ import Layout from "../layouts/Layout.astro";
 </script>
 
 <Layout title="Consulting — Greg Knoblauch" description="Staff-level software engineering consulting for fintech, platform, and distributed systems">
-  <main class="text-white max-w-3xl w-full mx-auto px-4 py-8 self-start">
+  <main class="text-white max-w-3xl w-full mx-auto px-4 pt-12 pb-16 self-start">
     <a
       href="/"
-      class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+      class="inline-block mb-10 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
     >
       ← Back
     </a>
 
-    <h1 class="text-4xl font-black mb-2">Consulting</h1>
-    <p class="text-neutral-400 mb-10 text-lg">
-      Staff-level engineering expertise, on demand.
-    </p>
+    <!-- Hero -->
+    <div class="flex items-center gap-6 mb-10">
+      <Image
+        width="100"
+        height="100"
+        src="/me.webp"
+        alt="Greg Knoblauch"
+        class="w-24 h-24 rounded-full border-2 border-primary-500/40 select-none pointer-events-none"
+      />
+      <div>
+        <h1 class="text-4xl font-black mb-1">Consulting</h1>
+        <p class="text-neutral-400 text-lg">Staff-level engineering expertise, on demand.</p>
+      </div>
+    </div>
 
     <!-- Intro -->
     <div class="bg-darkslate-500 border border-neutral-700 rounded-lg p-6 mb-6">
