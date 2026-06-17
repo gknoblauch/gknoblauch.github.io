@@ -1,33 +1,19 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import LayoutBlogPost from "../../layouts/LayoutBlogPost.astro";
 
 export const prerender = true;
 
 export async function getStaticPaths() {
-  return (await getCollection("blog")).map(({ slug }) => ({
-    params: { slug },
+  return (await getCollection("blog")).map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
   }));
 }
 
-const { slug } = Astro.params;
+const { entry } = Astro.props;
 
-if (slug === undefined) {
-  throw new Error("slug is missing");
-}
-
-const posts = (await getCollection("blog")).sort(
-  (blogEntryA, blogEntryB) =>
-    (blogEntryB.data.pubDate || new Date()).getTime() -
-    (blogEntryA.data.pubDate || new Date()).getTime()
-);
-
-const entry = posts.find((entry) => entry.slug === slug);
-if (entry === undefined) {
-  return Astro.redirect("/404");
-}
-
-const { Content, remarkPluginFrontmatter } = await entry.render();
+const { Content, remarkPluginFrontmatter } = await render(entry);
 ---
 
 <LayoutBlogPost
