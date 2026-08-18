@@ -10,13 +10,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.18",
+    "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
-    "@astrojs/solid-js": "^6.0.1",
-    "@astrojs/svelte": "^8.1.2",
+    "@astrojs/solid-js": "^7.0.2",
+    "@astrojs/svelte": "^9.0.1",
     "@iconify-json/ri": "^1.2.10",
     "@rive-app/canvas": "^2.38.1",
-    "astro": "^6.4.8",
+    "astro": "^7.2.3",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",
     "d3": "^7.9.0",
