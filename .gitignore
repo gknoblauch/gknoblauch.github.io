@@ -1,12 +1,7 @@
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-_site/
-.sass-cache/
-=======
->>>>>>> Stashed changes
 # build output
 dist/
+_site/
+.sass-cache/
 
 # generated types
 .astro/
@@ -14,11 +9,8 @@ dist/
 # dependencies
 node_modules/
 
-<<<<<<< Updated upstream
 .netlify/
 
-=======
->>>>>>> Stashed changes
 # logs
 npm-debug.log*
 yarn-debug.log*
@@ -31,7 +23,3 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
