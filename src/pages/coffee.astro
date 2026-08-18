@@ -1,0 +1,199 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<script>
+  import { animate } from "motion";
+  import { loaderAnimation } from "../lib/constants";
+  animate([loaderAnimation] as any);
+</script>
+
+<Layout
+  title="Coffee Grind Calculator — Greg Knoblauch"
+  description="How long to grind on my Baratza Virtuoso for a Moccamaster brew."
+>
+  <main class="w-screen h-screen overflow-y-auto flex flex-col justify-start items-start text-white">
+    <div class="max-w-lg mx-auto w-full px-8 py-8">
+      <a
+        href="/"
+        class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+      >
+        ← Back
+      </a>
+
+      <!-- Hero -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-black mb-1">
+          <span
+            id="cal-toggle"
+            class="cursor-default select-none"
+            role="button"
+            tabindex="-1"
+            title=""
+          >☕</span> Grind Calculator
+        </h1>
+        <p class="text-neutral-400 text-lg">
+          Baratza Virtuoso → Moccamaster
+        </p>
+      </div>
+
+      <!-- How much -->
+      <label class="block text-sm text-neutral-400 mb-2" for="volume">
+        How much coffee do you want to make?
+      </label>
+      <div class="flex items-center gap-3 mb-1">
+        <input
+          id="volume"
+          type="range"
+          min="0"
+          max="4"
+          step="1"
+          value="3"
+          class="flex-1 accent-primary-500"
+        />
+        <span
+          id="volume-label"
+          class="w-20 text-right text-xl font-bold tabular-nums"
+        >1.0 L</span>
+      </div>
+      <p id="volume-sub" class="text-xs text-neutral-500 mb-8 text-right">8 cups</p>
+
+      <!-- Strength -->
+      <p class="text-sm text-neutral-400 mb-2">Strength</p>
+      <div class="grid grid-cols-3 gap-3 mb-10" id="strength">
+        <button
+          data-strength="weak"
+          class="strength-btn bg-darkslate-500 border border-neutral-700 rounded-lg py-3 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+        >Weak</button>
+        <button
+          data-strength="normal"
+          class="strength-btn bg-darkslate-500 border border-neutral-700 rounded-lg py-3 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+        >Normal</button>
+        <button
+          data-strength="strong"
+          class="strength-btn bg-darkslate-500 border border-neutral-700 rounded-lg py-3 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+        >Strong</button>
+      </div>
+
+      <!-- Result -->
+      <div class="bg-darkslate-500 border border-primary-500/40 rounded-lg p-8 text-center">
+        <p class="text-sm text-neutral-400 mb-1">Grind for</p>
+        <p class="mb-2">
+          <span id="seconds" class="text-6xl font-black text-primary-500 tabular-nums">39</span>
+          <span class="text-2xl font-bold text-primary-500">sec</span>
+        </p>
+        <p id="grams" class="text-neutral-400 text-sm">≈ 55 g of beans</p>
+      </div>
+
+      <!-- Hidden grinder rate (reveal by clicking the cup) -->
+      <div id="cal-panel" class="hidden mt-6 flex items-center justify-center gap-2 text-xs text-neutral-500">
+        <span>Grinder rate</span>
+        <input
+          id="cal-rate"
+          type="number"
+          min="0.1"
+          step="0.1"
+          value="1.4"
+          class="w-16 bg-darkslate-700 border border-neutral-800 rounded px-2 py-1 text-right tabular-nums text-neutral-300 focus:border-primary-500 focus:outline-none"
+        />
+        <span>g / sec</span>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // Default grinder rate: 14 g of beans per 10 s on my Virtuoso → 1.4 g/sec.
+  const DEFAULT_RATE = 1.4;
+  const CAL_KEY = "coffee-rate";
+
+  // Beans per litre of water (g/L). Moccamaster recommends 55 g/L; weak and
+  // strong are ~±15% around that.
+  const GRAMS_PER_LITRE = {
+    weak: 47,
+    normal: 55,
+    strong: 63,
+  };
+
+  const savedRate = (() => {
+    const n = Number(localStorage.getItem(CAL_KEY));
+    return n > 0 ? n : DEFAULT_RATE;
+  })();
+
+  // Brew levels marked on the Moccamaster carafe (mL).
+  const LEVELS = [300, 500, 750, 1000, 1250];
+
+  const state = {
+    levelIndex: 3, // 1000 mL
+    strength: "normal" as keyof typeof GRAMS_PER_LITRE,
+    rate: savedRate,
+  };
+
+  const volumeInput = document.getElementById("volume") as HTMLInputElement;
+  const volumeLabel = document.getElementById("volume-label")!;
+  const volumeSub = document.getElementById("volume-sub")!;
+  const secondsEl = document.getElementById("seconds")!;
+  const gramsEl = document.getElementById("grams")!;
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(".strength-btn"),
+  );
+
+  const calToggle = document.getElementById("cal-toggle")!;
+  const calPanel = document.getElementById("cal-panel")!;
+  const calRateInput = document.getElementById("cal-rate") as HTMLInputElement;
+
+  const activeClasses = ["!bg-primary-500", "!border-primary-500", "text-white"];
+
+  function render() {
+    const volumeMl = LEVELS[state.levelIndex];
+    // Big number in litres; carafe cups (125 mL each) as the subtext.
+    volumeLabel.textContent = `${(volumeMl / 1000).toFixed(2)} L`;
+    const cups = volumeMl / 125;
+    volumeSub.textContent = `${Number(cups.toFixed(1))} cups`;
+
+    const grams = (volumeMl / 1000) * GRAMS_PER_LITRE[state.strength];
+    const seconds = grams / state.rate;
+
+    secondsEl.textContent = String(Math.round(seconds));
+    gramsEl.textContent = `≈ ${Math.round(grams)} g of beans`;
+
+    buttons.forEach((btn) => {
+      const isActive = btn.dataset.strength === state.strength;
+      btn.classList.toggle(activeClasses[0], isActive);
+      btn.classList.toggle(activeClasses[1], isActive);
+      btn.classList.toggle(activeClasses[2], isActive);
+    });
+  }
+
+  volumeInput.addEventListener("input", () => {
+    state.levelIndex = Number(volumeInput.value);
+    render();
+  });
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.strength = btn.dataset.strength as keyof typeof GRAMS_PER_LITRE;
+      render();
+    });
+  });
+
+  // Hidden grinder rate: click the cup to reveal, edits persist locally.
+  calRateInput.value = String(state.rate);
+
+  calToggle.addEventListener("click", () => {
+    calPanel.classList.toggle("hidden");
+  });
+
+  calRateInput.addEventListener("input", () => {
+    const rate = Number(calRateInput.value);
+    if (rate > 0) {
+      state.rate = rate;
+      try {
+        localStorage.setItem(CAL_KEY, String(rate));
+      } catch {}
+      render();
+    }
+  });
+
+  render();
+</script>
