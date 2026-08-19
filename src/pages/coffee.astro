@@ -79,7 +79,7 @@ import Layout from "../layouts/Layout.astro";
       <div class="bg-darkslate-500 border border-primary-500/40 rounded-lg p-8 text-center">
         <p class="text-sm text-neutral-400 mb-1">Grind for</p>
         <p class="mb-2">
-          <span id="seconds" class="text-6xl font-black text-primary-500 tabular-nums">39</span>
+          <span id="seconds" class="text-6xl font-black text-primary-500 tabular-nums">32</span>
           <span class="text-2xl font-bold text-primary-500">sec</span>
         </p>
         <p id="grams" class="text-neutral-400 text-sm">≈ 55 g of beans</p>
@@ -93,7 +93,7 @@ import Layout from "../layouts/Layout.astro";
           type="number"
           min="0.1"
           step="0.1"
-          value="1.4"
+          value="1.73"
           class="w-16 bg-darkslate-700 border border-neutral-800 rounded px-2 py-1 text-right tabular-nums text-neutral-300 focus:border-primary-500 focus:outline-none"
         />
         <span>g / sec</span>
@@ -103,8 +103,8 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <script>
-  // Default grinder rate: 14 g of beans per 10 s on my Virtuoso → 1.4 g/sec.
-  const DEFAULT_RATE = 1.4;
+  // Default grinder rate: six 5 s grinds (9,8,8,9,9,9 g) → 52 g/30 s = 1.73 g/sec.
+  const DEFAULT_RATE = 1.73;
   const CAL_KEY = "coffee-rate";
 
   // Beans per litre of water (g/L). Moccamaster recommends 55 g/L; weak and
