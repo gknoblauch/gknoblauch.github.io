@@ -17,7 +17,7 @@
     "@astrojs/svelte": "^9.0.1",
     "@iconify-json/ri": "^1.2.10",
     "@rive-app/canvas": "^2.38.1",
-    "astro": "^7.2.3",
+    "astro": "^7.3.5",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",
     "d3": "^7.9.0",
@@ -37,7 +37,7 @@
     "@unocss/preset-uno": "^66.7.2",
     "@unocss/reset": "^66.7.2",
     "autoprefixer": "^10.5.0",
-    "markdown-it": "^14.2.0",
+    "markdown-it": "^14.3.1",
     "sanitize-html": "^2.17.7",
     "typescript": "^6.0.3",
     "unocss": "^66.7.2"
