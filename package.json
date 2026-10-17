@@ -17,6 +17,7 @@
     "@astrojs/svelte": "^9.0.1",
     "@iconify-json/ri": "^1.2.10",
     "@rive-app/canvas": "^2.38.1",
+    "@supabase/supabase-js": "^2.118.0",
     "astro": "^7.3.5",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",

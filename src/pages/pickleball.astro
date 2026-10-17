@@ -1,0 +1,383 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<script>
+  import { animate } from "motion";
+  import { loaderAnimation } from "../lib/constants";
+  animate([loaderAnimation] as any);
+</script>
+
+<Layout
+  title="Pickleball — Greg Knoblauch"
+  description="Rankings, standings and a game log for our pickleball crew."
+>
+  <main class="text-white max-w-3xl mx-auto px-4 py-8 w-full">
+    <a
+      href="/"
+      class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+    >
+      ← Back
+    </a>
+
+    <h1 class="text-4xl font-black mb-1">🏓 Pickleball</h1>
+    <p class="text-neutral-400 mb-8">
+      Rankings for the crew. Ratings use a simplified Elo — beat stronger
+      players and you climb faster.
+    </p>
+
+    <!-- A shared datalist of known player names feeds every name input. -->
+    <datalist id="player-names"></datalist>
+
+    <!-- Standings -->
+    <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
+      <h2 class="text-xl font-bold mb-4">Standings</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-neutral-400 text-left border-b border-neutral-700">
+              <th class="py-2 pr-2 font-medium">#</th>
+              <th class="py-2 pr-2 font-medium">Player</th>
+              <th class="py-2 pr-2 font-medium text-right">Rating</th>
+              <th class="py-2 pr-2 font-medium text-right">W–L</th>
+              <th class="py-2 pr-2 font-medium text-right">Games</th>
+              <th class="py-2 font-medium text-right">Win%</th>
+            </tr>
+          </thead>
+          <tbody id="standings-body"></tbody>
+        </table>
+      </div>
+      <p id="standings-empty" class="text-neutral-500 text-sm hidden">
+        No games yet — add one below to get started.
+      </p>
+      <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
+    </section>
+
+    <!-- Add a game -->
+    <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
+      <h2 class="text-xl font-bold mb-4">Add a game</h2>
+
+      <!-- Format toggle -->
+      <div class="grid grid-cols-2 gap-3 mb-5" id="format-toggle">
+        <button
+          type="button"
+          data-format="doubles"
+          class="format-btn bg-darkslate-700 border border-neutral-700 rounded-lg py-2 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+        >Doubles</button>
+        <button
+          type="button"
+          data-format="singles"
+          class="format-btn bg-darkslate-700 border border-neutral-700 rounded-lg py-2 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+        >Singles</button>
+      </div>
+
+      <form id="game-form" class="flex flex-col gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Team A -->
+          <div class="border border-neutral-700 rounded-lg p-4">
+            <p class="text-sm text-neutral-400 mb-2">Team A</p>
+            <input
+              id="a1" type="text" placeholder="Player" autocomplete="off"
+              list="player-names"
+              class="w-full mb-2 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+            />
+            <input
+              id="a2" type="text" placeholder="Partner" autocomplete="off"
+              list="player-names"
+              class="partner-input w-full mb-3 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+            />
+            <label class="block text-xs text-neutral-500 mb-1">Score</label>
+            <input
+              id="score-a" type="number" min="0" step="1" inputmode="numeric"
+              class="w-24 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg tabular-nums"
+            />
+          </div>
+
+          <!-- Team B -->
+          <div class="border border-neutral-700 rounded-lg p-4">
+            <p class="text-sm text-neutral-400 mb-2">Team B</p>
+            <input
+              id="b1" type="text" placeholder="Player" autocomplete="off"
+              list="player-names"
+              class="w-full mb-2 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+            />
+            <input
+              id="b2" type="text" placeholder="Partner" autocomplete="off"
+              list="player-names"
+              class="partner-input w-full mb-3 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+            />
+            <label class="block text-xs text-neutral-500 mb-1">Score</label>
+            <input
+              id="score-b" type="number" min="0" step="1" inputmode="numeric"
+              class="w-24 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg tabular-nums"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4 items-end">
+          <div>
+            <label class="block text-xs text-neutral-500 mb-1" for="played-on">Date</label>
+            <input
+              id="played-on" type="date"
+              class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-500 mb-1" for="passcode">Passcode</label>
+            <input
+              id="passcode" type="password" autocomplete="off" placeholder="to record"
+              class="w-32 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+            />
+          </div>
+          <button
+            id="submit-btn" type="submit"
+            class="ml-auto bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg px-5 py-2 transition-colors duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >Add game</button>
+        </div>
+
+        <p id="form-msg" class="text-sm hidden"></p>
+      </form>
+    </section>
+
+    <!-- Game log -->
+    <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
+      <h2 class="text-xl font-bold mb-4">Game log</h2>
+      <ul id="log-body" class="flex flex-col gap-2"></ul>
+      <p id="log-empty" class="text-neutral-500 text-sm hidden">No games logged yet.</p>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  import { supabase, SUPABASE_URL } from "../lib/supabase";
+  import {
+    computeStandings,
+    allPlayerNames,
+    sortGamesChronologically,
+    type Game,
+  } from "../lib/pickleball";
+
+  const PASSCODE_KEY = "pickleball-passcode";
+
+  // --- Elements ---
+  const standingsBody = document.getElementById("standings-body")!;
+  const standingsEmpty = document.getElementById("standings-empty")!;
+  const standingsLoading = document.getElementById("standings-loading")!;
+  const logBody = document.getElementById("log-body")!;
+  const logEmpty = document.getElementById("log-empty")!;
+  const datalist = document.getElementById("player-names")!;
+
+  const form = document.getElementById("game-form") as HTMLFormElement;
+  const formBtns = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(".format-btn"),
+  );
+  const partnerInputs = Array.from(
+    document.querySelectorAll<HTMLInputElement>(".partner-input"),
+  );
+  const a1 = document.getElementById("a1") as HTMLInputElement;
+  const a2 = document.getElementById("a2") as HTMLInputElement;
+  const b1 = document.getElementById("b1") as HTMLInputElement;
+  const b2 = document.getElementById("b2") as HTMLInputElement;
+  const scoreA = document.getElementById("score-a") as HTMLInputElement;
+  const scoreB = document.getElementById("score-b") as HTMLInputElement;
+  const playedOn = document.getElementById("played-on") as HTMLInputElement;
+  const passcode = document.getElementById("passcode") as HTMLInputElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const formMsg = document.getElementById("form-msg")!;
+
+  let format: "doubles" | "singles" = "doubles";
+
+  // --- Defaults ---
+  playedOn.value = new Date().toISOString().slice(0, 10);
+  try {
+    const saved = localStorage.getItem(PASSCODE_KEY);
+    if (saved) passcode.value = saved;
+  } catch {}
+
+  // --- Format toggle ---
+  function renderFormat() {
+    formBtns.forEach((btn) => {
+      const active = btn.dataset.format === format;
+      btn.classList.toggle("!bg-primary-500", active);
+      btn.classList.toggle("!border-primary-500", active);
+      btn.classList.toggle("text-white", active);
+    });
+    const doubles = format === "doubles";
+    partnerInputs.forEach((el) => el.classList.toggle("hidden", !doubles));
+    if (!doubles) {
+      a2.value = "";
+      b2.value = "";
+    }
+  }
+  formBtns.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      format = btn.dataset.format as "doubles" | "singles";
+      renderFormat();
+    }),
+  );
+  renderFormat();
+
+  // --- Rendering ---
+  function setMsg(text: string, kind: "error" | "ok") {
+    formMsg.textContent = text;
+    formMsg.classList.remove("hidden", "text-primary-500", "text-green-400");
+    formMsg.classList.add(kind === "error" ? "text-primary-500" : "text-green-400");
+  }
+  function clearMsg() {
+    formMsg.classList.add("hidden");
+    formMsg.textContent = "";
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+  }
+
+  function render(games: Game[]) {
+    // Datalist of known names.
+    datalist.innerHTML = allPlayerNames(games)
+      .map((n) => `<option value="${escapeHtml(n)}"></option>`)
+      .join("");
+
+    // Standings.
+    const standings = computeStandings(games);
+    standingsLoading.classList.add("hidden");
+    if (standings.length === 0) {
+      standingsBody.innerHTML = "";
+      standingsEmpty.classList.remove("hidden");
+    } else {
+      standingsEmpty.classList.add("hidden");
+      standingsBody.innerHTML = standings
+        .map(
+          (s, i) => `
+          <tr class="border-b border-neutral-800 last:border-0">
+            <td class="py-2 pr-2 text-neutral-500 tabular-nums">${i + 1}</td>
+            <td class="py-2 pr-2 font-medium">${escapeHtml(s.name)}</td>
+            <td class="py-2 pr-2 text-right font-bold text-primary-500 tabular-nums">${s.rating}</td>
+            <td class="py-2 pr-2 text-right tabular-nums">${s.wins}–${s.losses}</td>
+            <td class="py-2 pr-2 text-right text-neutral-400 tabular-nums">${s.games}</td>
+            <td class="py-2 text-right text-neutral-400 tabular-nums">${s.winPct}%</td>
+          </tr>`,
+        )
+        .join("");
+    }
+
+    // Game log (most recent first).
+    const log = sortGamesChronologically(games).reverse();
+    if (log.length === 0) {
+      logBody.innerHTML = "";
+      logEmpty.classList.remove("hidden");
+    } else {
+      logEmpty.classList.add("hidden");
+      logBody.innerHTML = log
+        .map((g) => {
+          const aWon = g.score_a > g.score_b;
+          const teamA = escapeHtml(g.team_a.join(" & "));
+          const teamB = escapeHtml(g.team_b.join(" & "));
+          const aCls = aWon ? "font-bold text-white" : "text-neutral-400";
+          const bCls = !aWon ? "font-bold text-white" : "text-neutral-400";
+          return `
+          <li class="flex items-center justify-between gap-3 border border-neutral-800 rounded-md px-3 py-2 text-sm">
+            <div class="min-w-0">
+              <span class="${aCls}">${teamA}</span>
+              <span class="text-neutral-600"> vs </span>
+              <span class="${bCls}">${teamB}</span>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+              <span class="tabular-nums"><span class="${aWon ? "text-white font-bold" : "text-neutral-500"}">${g.score_a}</span><span class="text-neutral-600">–</span><span class="${!aWon ? "text-white font-bold" : "text-neutral-500"}">${g.score_b}</span></span>
+              <span class="text-neutral-600 text-xs">${escapeHtml(g.played_on)}</span>
+            </div>
+          </li>`;
+        })
+        .join("");
+    }
+  }
+
+  // --- Data ---
+  async function loadGames() {
+    if (SUPABASE_URL.includes("YOUR_PROJECT")) {
+      standingsLoading.textContent =
+        "Standings will appear here once Supabase is connected.";
+      return;
+    }
+    const { data, error } = await supabase
+      .from("games")
+      .select("id, played_on, created_at, format, team_a, team_b, score_a, score_b");
+    if (error) {
+      standingsLoading.textContent = `Couldn't load games: ${error.message}`;
+      return;
+    }
+    render((data ?? []) as Game[]);
+  }
+
+  // --- Submit ---
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMsg();
+
+    const teamA = [a1.value.trim(), format === "doubles" ? a2.value.trim() : ""]
+      .filter(Boolean);
+    const teamB = [b1.value.trim(), format === "doubles" ? b2.value.trim() : ""]
+      .filter(Boolean);
+    const need = format === "doubles" ? 2 : 1;
+
+    if (teamA.length !== need || teamB.length !== need) {
+      setMsg(`Enter ${need} name${need > 1 ? "s" : ""} per team.`, "error");
+      return;
+    }
+    const everyone = [...teamA, ...teamB].map((n) => n.toLowerCase());
+    if (new Set(everyone).size !== everyone.length) {
+      setMsg("Each player can only appear once.", "error");
+      return;
+    }
+    const sa = Number(scoreA.value);
+    const sb = Number(scoreB.value);
+    if (!Number.isInteger(sa) || !Number.isInteger(sb) || sa < 0 || sb < 0) {
+      setMsg("Scores must be whole numbers.", "error");
+      return;
+    }
+    if (sa === sb) {
+      setMsg("Scores can't be tied.", "error");
+      return;
+    }
+    if (!passcode.value) {
+      setMsg("Passcode required to record a game.", "error");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving…";
+
+    const { error } = await supabase.rpc("add_game", {
+      p_passcode: passcode.value,
+      p_played_on: playedOn.value,
+      p_format: format,
+      p_team_a: teamA,
+      p_team_b: teamB,
+      p_score_a: sa,
+      p_score_b: sb,
+    });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Add game";
+
+    if (error) {
+      const wrongPass = /passcode/i.test(error.message);
+      setMsg(wrongPass ? "Wrong passcode." : `Error: ${error.message}`, "error");
+      return;
+    }
+
+    try {
+      localStorage.setItem(PASSCODE_KEY, passcode.value);
+    } catch {}
+
+    // Clear names/scores for the next entry; keep date & passcode.
+    a1.value = a2.value = b1.value = b2.value = "";
+    scoreA.value = scoreB.value = "";
+    setMsg("Game added ✓", "ok");
+    await loadGames();
+  });
+
+  loadGames();
+</script>
