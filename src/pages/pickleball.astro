@@ -24,20 +24,27 @@ import Layout from "../layouts/Layout.astro";
 
       <h1 class="text-4xl font-black mb-1">🏓 Pickleball</h1>
       <p class="text-neutral-400 mb-8">
-        Rankings for the crew. Ratings use a simplified Elo — beat stronger
-        players and you climb faster.
+        Rankings for the crew. Beat stronger players and you climb faster —
+        toggle between a classic Elo and a DUPR-style rating.
       </p>
 
       <!-- Standings -->
       <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
-        <h2 class="text-xl font-bold mb-4">Standings</h2>
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <h2 class="text-xl font-bold">Standings</h2>
+          <!-- Rank-by toggle -->
+          <div class="inline-flex rounded-lg border border-neutral-700 overflow-hidden text-xs" id="rank-toggle">
+            <button type="button" data-metric="dupr" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100">DUPR</button>
+            <button type="button" data-metric="elo" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100 border-l border-neutral-700">Elo</button>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="text-neutral-400 text-left border-b border-neutral-700">
                 <th class="py-2 pr-2 font-medium">#</th>
                 <th class="py-2 pr-2 font-medium">Player</th>
-                <th class="py-2 pr-2 font-medium text-right">Rating</th>
+                <th id="rating-header" class="py-2 pr-2 font-medium text-right">DUPR</th>
                 <th class="py-2 pr-2 font-medium text-right">W–L</th>
                 <th class="py-2 pr-2 font-medium text-right">Games</th>
                 <th class="py-2 font-medium text-right">Win%</th>
@@ -50,6 +57,10 @@ import Layout from "../layouts/Layout.astro";
           No games yet — add one below to get started.
         </p>
         <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
+        <p class="text-neutral-600 text-xs mt-3">
+          DUPR here is a club-style rating (DUPR's 2.0–8.0 scale with
+          margin-of-victory), not an official DUPR number.
+        </p>
       </section>
 
       <!-- Add a game -->
@@ -197,6 +208,10 @@ import Layout from "../layouts/Layout.astro";
   const standingsLoading = document.getElementById("standings-loading")!;
   const logBody = document.getElementById("log-body")!;
   const logEmpty = document.getElementById("log-empty")!;
+  const rankBtns = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(".rank-btn"),
+  );
+  const ratingHeader = document.getElementById("rating-header")!;
 
   const form = document.getElementById("game-form") as HTMLFormElement;
   const formBtns = Array.from(
@@ -217,6 +232,8 @@ import Layout from "../layouts/Layout.astro";
 
   let format: "doubles" | "singles" = "doubles";
   let knownNames: string[] = [];
+  let metric: "elo" | "dupr" = "dupr";
+  let currentGames: Game[] = [];
 
   // --- Defaults ---
   playedOn.value = new Date().toISOString().slice(0, 10);
@@ -341,32 +358,55 @@ import Layout from "../layouts/Layout.astro";
     formMsg.textContent = "";
   }
 
-  function render(games: Game[]) {
-    knownNames = allPlayerNames(games);
-    populateSelects(knownNames);
+  // --- Rank-by (Elo / DUPR) toggle ---
+  function renderRankToggle() {
+    rankBtns.forEach((btn) => {
+      const active = btn.dataset.metric === metric;
+      btn.classList.toggle("bg-primary-500", active);
+      btn.classList.toggle("text-white", active);
+      btn.classList.toggle("text-neutral-400", !active);
+    });
+    ratingHeader.textContent = metric === "dupr" ? "DUPR" : "Elo";
+  }
+  rankBtns.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      metric = btn.dataset.metric as "elo" | "dupr";
+      renderRankToggle();
+      renderStandings();
+    }),
+  );
+  renderRankToggle();
 
-    // Standings.
-    const standings = computeStandings(games);
+  function renderStandings() {
+    const standings = computeStandings(currentGames, metric);
     standingsLoading.classList.add("hidden");
     if (standings.length === 0) {
       standingsBody.innerHTML = "";
       standingsEmpty.classList.remove("hidden");
-    } else {
-      standingsEmpty.classList.add("hidden");
-      standingsBody.innerHTML = standings
-        .map(
-          (s, i) => `
+      return;
+    }
+    standingsEmpty.classList.add("hidden");
+    standingsBody.innerHTML = standings
+      .map((s, i) => {
+        const value = metric === "dupr" ? s.dupr.toFixed(2) : String(s.elo);
+        return `
           <tr class="border-b border-neutral-800 last:border-0">
             <td class="py-2 pr-2 text-neutral-500 tabular-nums">${i + 1}</td>
             <td class="py-2 pr-2 font-medium">${escapeHtml(s.name)}</td>
-            <td class="py-2 pr-2 text-right font-bold text-primary-500 tabular-nums">${s.rating}</td>
+            <td class="py-2 pr-2 text-right font-bold text-primary-500 tabular-nums">${value}</td>
             <td class="py-2 pr-2 text-right tabular-nums">${s.wins}–${s.losses}</td>
             <td class="py-2 pr-2 text-right text-neutral-400 tabular-nums">${s.games}</td>
             <td class="py-2 text-right text-neutral-400 tabular-nums">${s.winPct}%</td>
-          </tr>`,
-        )
-        .join("");
-    }
+          </tr>`;
+      })
+      .join("");
+  }
+
+  function render(games: Game[]) {
+    currentGames = games;
+    knownNames = allPlayerNames(games);
+    populateSelects(knownNames);
+    renderStandings();
 
     // Game log (most recent first).
     const log = sortGamesChronologically(games).reverse();
