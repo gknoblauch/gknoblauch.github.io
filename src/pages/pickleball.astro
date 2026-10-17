@@ -27,10 +27,55 @@ import Layout from "../layouts/Layout.astro";
         Pickleball standings — rank by Elo or DUPR.
       </p>
 
-      <!-- Add a game -->
+      <!-- Standings -->
       <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
-        <h2 class="text-xl font-bold mb-4">Add a game</h2>
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <h2 class="text-xl font-bold">Standings</h2>
+          <div class="flex items-center gap-2">
+            <button
+              type="button" id="jump-add"
+              class="bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg px-3 py-1.5 text-xs transition-colors duration-100"
+            >➕ Add game</button>
+            <!-- Rank-by toggle -->
+            <div class="inline-flex rounded-lg border border-neutral-700 overflow-hidden text-xs" id="rank-toggle">
+              <button type="button" data-metric="elo" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100">Elo</button>
+              <button type="button" data-metric="dupr" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100 border-l border-neutral-700">DUPR</button>
+            </div>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-neutral-400 text-left border-b border-neutral-700">
+                <th class="py-2 pr-2 font-medium">#</th>
+                <th class="py-2 pr-2 font-medium">Player</th>
+                <th id="rating-header" class="py-2 pr-2 font-medium text-right">Elo</th>
+                <th class="py-2 pr-2 font-medium text-right">W–L</th>
+                <th class="py-2 pr-2 font-medium text-right">Games</th>
+                <th class="py-2 font-medium text-right">Win%</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body"></tbody>
+          </table>
+        </div>
+        <p id="standings-empty" class="text-neutral-500 text-sm hidden">
+          No games yet — tap “Add game” to get started.
+        </p>
+        <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
+        <p class="text-neutral-600 text-xs mt-3">
+          DUPR here is a club-style rating (DUPR's 2.0–8.0 scale with
+          margin-of-victory), not an official DUPR number.
+        </p>
+      </section>
 
+      <!-- Add a game (collapsed by default to keep standings up top) -->
+      <section id="add-game" class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
+        <button type="button" id="add-toggle" class="w-full flex items-center justify-between text-left">
+          <h2 class="text-xl font-bold">Add a game</h2>
+          <span id="add-chevron" class="text-neutral-400 text-sm font-medium">Show ▾</span>
+        </button>
+
+        <div id="add-body" class="hidden mt-5">
         <!-- Format toggle -->
         <div class="grid grid-cols-2 gap-3 mb-5" id="format-toggle">
           <button
@@ -107,41 +152,7 @@ import Layout from "../layouts/Layout.astro";
 
           <p id="form-msg" class="text-sm hidden"></p>
         </form>
-      </section>
-
-      <!-- Standings -->
-      <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
-        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
-          <h2 class="text-xl font-bold">Standings</h2>
-          <!-- Rank-by toggle -->
-          <div class="inline-flex rounded-lg border border-neutral-700 overflow-hidden text-xs" id="rank-toggle">
-            <button type="button" data-metric="elo" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100">Elo</button>
-            <button type="button" data-metric="dupr" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100 border-l border-neutral-700">DUPR</button>
-          </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-neutral-400 text-left border-b border-neutral-700">
-                <th class="py-2 pr-2 font-medium">#</th>
-                <th class="py-2 pr-2 font-medium">Player</th>
-                <th id="rating-header" class="py-2 pr-2 font-medium text-right">Elo</th>
-                <th class="py-2 pr-2 font-medium text-right">W–L</th>
-                <th class="py-2 pr-2 font-medium text-right">Games</th>
-                <th class="py-2 font-medium text-right">Win%</th>
-              </tr>
-            </thead>
-            <tbody id="standings-body"></tbody>
-          </table>
-        </div>
-        <p id="standings-empty" class="text-neutral-500 text-sm hidden">
-          No games yet — add one above to get started.
-        </p>
-        <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
-        <p class="text-neutral-600 text-xs mt-3">
-          DUPR here is a club-style rating (DUPR's 2.0–8.0 scale with
-          margin-of-victory), not an official DUPR number.
-        </p>
       </section>
 
       <!-- Game log -->
@@ -241,6 +252,11 @@ import Layout from "../layouts/Layout.astro";
   const passcode = document.getElementById("passcode") as HTMLInputElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
   const formMsg = document.getElementById("form-msg")!;
+  const addSection = document.getElementById("add-game")!;
+  const addToggle = document.getElementById("add-toggle")!;
+  const addBody = document.getElementById("add-body")!;
+  const addChevron = document.getElementById("add-chevron")!;
+  const jumpAdd = document.getElementById("jump-add")!;
 
   const sel = (s: Slot) => document.getElementById(`${s}-sel`) as HTMLSelectElement;
   const newInput = (s: Slot) => document.getElementById(`${s}-new`) as HTMLInputElement;
@@ -361,6 +377,19 @@ import Layout from "../layouts/Layout.astro";
     }),
   );
   renderFormat();
+
+  // --- Collapsible "Add a game" (collapsed by default) ---
+  function setAddOpen(open: boolean) {
+    addBody.classList.toggle("hidden", !open);
+    addChevron.textContent = open ? "Hide ▴" : "Show ▾";
+  }
+  addToggle.addEventListener("click", () =>
+    setAddOpen(addBody.classList.contains("hidden")),
+  );
+  jumpAdd.addEventListener("click", () => {
+    setAddOpen(true);
+    addSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   // --- Rendering ---
   function setMsg(text: string, kind: "error" | "ok") {
