@@ -61,3 +61,23 @@ revoke execute on function
   public.add_game(text, date, text, text[], text[], int, int) from public;
 grant execute on function
   public.add_game(text, date, text, text[], text[], int, int) to anon;
+
+-- 4. Passcode-guarded delete (for removing a game from the page) -----------
+create or replace function public.delete_game(
+  p_passcode text,
+  p_id       uuid
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if p_passcode is distinct from 'CHANGE_ME' then
+    raise exception 'Invalid passcode';
+  end if;
+  delete from public.games where id = p_id;
+end;
+$$;
+
+revoke execute on function public.delete_game(text, uuid) from public;
+grant execute on function public.delete_game(text, uuid) to anon;

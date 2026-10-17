@@ -30,13 +30,19 @@ This creates the `games` table, makes it publicly readable, and adds an
    security is enforced by the passcode in the database, not by hiding the key.
 3. Commit and push to `master`. GitHub Actions rebuilds and deploys automatically.
 
+> **Already set up before delete existed?** Re-run just the `delete_game`
+> function block (section 4) from [`pickleball-setup.sql`](./pickleball-setup.sql)
+> in the SQL editor, with your real passcode in place of `CHANGE_ME`, to enable
+> the in-app delete button.
+
 ## Using it
 - **View standings:** anyone opens `/pickleball`. No login.
 - **Add a game:** fill in the teams + scores, enter the passcode, hit **Add game**.
   The passcode is remembered in your browser so you only type it once per device.
-- **Fix a typo / delete a bad game:** Supabase dashboard → **Table Editor →
-  games**. Edit or delete rows directly like a spreadsheet; the page updates on
-  refresh.
+- **Rank by Elo or DUPR:** toggle at the top of the standings.
+- **Filter the game log:** by player and by singles/doubles.
+- **Delete a game:** hit the ✕ on its row in the game log (passcode-gated). For a
+  deeper edit, change the row directly in Supabase → **Table Editor → games**.
 
 ## Tuning (optional)
 All in [`src/lib/pickleball.ts`](./src/lib/pickleball.ts):
