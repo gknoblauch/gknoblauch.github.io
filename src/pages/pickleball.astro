@@ -10,7 +10,7 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout
   title="Pickleball — Greg Knoblauch"
-  description="Rankings, standings and a game log for our pickleball crew."
+  description="Pickleball standings and a game log, ranked by Elo or DUPR."
 >
   <!-- main is the scroll container (body is fixed-height + centered). -->
   <main class="w-screen h-screen overflow-y-auto text-white">
@@ -24,18 +24,23 @@ import Layout from "../layouts/Layout.astro";
 
       <h1 class="text-4xl font-black mb-1">🏓 Pickleball</h1>
       <p class="text-neutral-400 mb-8">
-        Rankings for the crew. Beat stronger players and you climb faster —
-        toggle between a classic Elo and a DUPR-style rating.
+        Pickleball standings — rank by Elo or DUPR.
       </p>
 
       <!-- Standings -->
       <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
         <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h2 class="text-xl font-bold">Standings</h2>
-          <!-- Rank-by toggle -->
-          <div class="inline-flex rounded-lg border border-neutral-700 overflow-hidden text-xs" id="rank-toggle">
-            <button type="button" data-metric="dupr" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100">DUPR</button>
-            <button type="button" data-metric="elo" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100 border-l border-neutral-700">Elo</button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button" id="jump-add"
+              class="bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg px-3 py-1.5 text-xs transition-colors duration-100"
+            >➕ Add game</button>
+            <!-- Rank-by toggle -->
+            <div class="inline-flex rounded-lg border border-neutral-700 overflow-hidden text-xs" id="rank-toggle">
+              <button type="button" data-metric="elo" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100">Elo</button>
+              <button type="button" data-metric="dupr" class="rank-btn px-3 py-1.5 font-semibold text-neutral-400 hover:text-white transition-colors duration-100 border-l border-neutral-700">DUPR</button>
+            </div>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -44,7 +49,7 @@ import Layout from "../layouts/Layout.astro";
               <tr class="text-neutral-400 text-left border-b border-neutral-700">
                 <th class="py-2 pr-2 font-medium">#</th>
                 <th class="py-2 pr-2 font-medium">Player</th>
-                <th id="rating-header" class="py-2 pr-2 font-medium text-right">DUPR</th>
+                <th id="rating-header" class="py-2 pr-2 font-medium text-right">Elo</th>
                 <th class="py-2 pr-2 font-medium text-right">W–L</th>
                 <th class="py-2 pr-2 font-medium text-right">Games</th>
                 <th class="py-2 font-medium text-right">Win%</th>
@@ -54,7 +59,7 @@ import Layout from "../layouts/Layout.astro";
           </table>
         </div>
         <p id="standings-empty" class="text-neutral-500 text-sm hidden">
-          No games yet — add one below to get started.
+          No games yet — tap “Add game” to get started.
         </p>
         <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
         <p class="text-neutral-600 text-xs mt-3">
@@ -63,10 +68,14 @@ import Layout from "../layouts/Layout.astro";
         </p>
       </section>
 
-      <!-- Add a game -->
-      <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
-        <h2 class="text-xl font-bold mb-4">Add a game</h2>
+      <!-- Add a game (collapsed by default to keep standings up top) -->
+      <section id="add-game" class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
+        <button type="button" id="add-toggle" class="w-full flex items-center justify-between text-left">
+          <h2 class="text-xl font-bold">Add a game</h2>
+          <span id="add-chevron" class="text-neutral-400 text-sm font-medium">Show ▾</span>
+        </button>
 
+        <div id="add-body" class="hidden mt-5">
         <!-- Format toggle -->
         <div class="grid grid-cols-2 gap-3 mb-5" id="format-toggle">
           <button
@@ -143,13 +152,25 @@ import Layout from "../layouts/Layout.astro";
 
           <p id="form-msg" class="text-sm hidden"></p>
         </form>
+        </div>
       </section>
 
       <!-- Game log -->
       <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
-        <h2 class="text-xl font-bold mb-4">Game log</h2>
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <h2 class="text-xl font-bold">Game log</h2>
+          <div class="flex gap-2">
+            <select id="log-player" class="log-filter bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md pl-2 py-1 text-xs text-neutral-300"></select>
+            <select id="log-format" class="log-filter bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md pl-2 py-1 text-xs text-neutral-300">
+              <option value="all">All formats</option>
+              <option value="doubles">Doubles</option>
+              <option value="singles">Singles</option>
+            </select>
+          </div>
+        </div>
         <ul id="log-body" class="flex flex-col gap-2"></ul>
         <p id="log-empty" class="text-neutral-500 text-sm hidden">No games logged yet.</p>
+        <p id="log-none" class="text-neutral-500 text-sm hidden">No games match these filters.</p>
       </section>
     </div>
   </main>
@@ -168,7 +189,8 @@ import Layout from "../layouts/Layout.astro";
   }
 
   /* Themed dropdown chevron so <select> matches the inputs. */
-  select.name-select {
+  select.name-select,
+  select.log-filter {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -178,7 +200,8 @@ import Layout from "../layouts/Layout.astro";
     background-size: 1rem;
     padding-right: 2.2rem;
   }
-  select.name-select option {
+  select.name-select option,
+  select.log-filter option {
     color: #fff;
     background: #1f2430;
   }
@@ -208,6 +231,9 @@ import Layout from "../layouts/Layout.astro";
   const standingsLoading = document.getElementById("standings-loading")!;
   const logBody = document.getElementById("log-body")!;
   const logEmpty = document.getElementById("log-empty")!;
+  const logNone = document.getElementById("log-none")!;
+  const logPlayerSel = document.getElementById("log-player") as HTMLSelectElement;
+  const logFormatSel = document.getElementById("log-format") as HTMLSelectElement;
   const rankBtns = Array.from(
     document.querySelectorAll<HTMLButtonElement>(".rank-btn"),
   );
@@ -226,13 +252,18 @@ import Layout from "../layouts/Layout.astro";
   const passcode = document.getElementById("passcode") as HTMLInputElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
   const formMsg = document.getElementById("form-msg")!;
+  const addSection = document.getElementById("add-game")!;
+  const addToggle = document.getElementById("add-toggle")!;
+  const addBody = document.getElementById("add-body")!;
+  const addChevron = document.getElementById("add-chevron")!;
+  const jumpAdd = document.getElementById("jump-add")!;
 
   const sel = (s: Slot) => document.getElementById(`${s}-sel`) as HTMLSelectElement;
   const newInput = (s: Slot) => document.getElementById(`${s}-new`) as HTMLInputElement;
 
   let format: "doubles" | "singles" = "doubles";
   let knownNames: string[] = [];
-  let metric: "elo" | "dupr" = "dupr";
+  let metric: "elo" | "dupr" = "elo";
   let currentGames: Game[] = [];
 
   // --- Defaults ---
@@ -347,6 +378,19 @@ import Layout from "../layouts/Layout.astro";
   );
   renderFormat();
 
+  // --- Collapsible "Add a game" (collapsed by default) ---
+  function setAddOpen(open: boolean) {
+    addBody.classList.toggle("hidden", !open);
+    addChevron.textContent = open ? "Hide ▴" : "Show ▾";
+  }
+  addToggle.addEventListener("click", () =>
+    setAddOpen(addBody.classList.contains("hidden")),
+  );
+  jumpAdd.addEventListener("click", () => {
+    setAddOpen(true);
+    addSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
   // --- Rendering ---
   function setMsg(text: string, kind: "error" | "ok") {
     formMsg.textContent = text;
@@ -402,27 +446,41 @@ import Layout from "../layouts/Layout.astro";
       .join("");
   }
 
-  function render(games: Game[]) {
-    currentGames = games;
-    knownNames = allPlayerNames(games);
-    populateSelects(knownNames);
-    renderStandings();
+  // --- Game-log filters ---
+  function populateLogPlayerFilter(names: string[]) {
+    const prev = logPlayerSel.value;
+    logPlayerSel.innerHTML =
+      `<option value="">All players</option>` +
+      names
+        .map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
+        .join("");
+    if (names.includes(prev)) logPlayerSel.value = prev;
+  }
 
-    // Game log (most recent first).
-    const log = sortGamesChronologically(games).reverse();
-    if (log.length === 0) {
-      logBody.innerHTML = "";
-      logEmpty.classList.remove("hidden");
-    } else {
-      logEmpty.classList.add("hidden");
-      logBody.innerHTML = log
-        .map((g) => {
-          const aWon = g.score_a > g.score_b;
-          const teamA = escapeHtml(g.team_a.join(" & "));
-          const teamB = escapeHtml(g.team_b.join(" & "));
-          const aCls = aWon ? "font-bold text-white" : "text-neutral-400";
-          const bCls = !aWon ? "font-bold text-white" : "text-neutral-400";
-          return `
+  function renderLog() {
+    const player = logPlayerSel.value; // "" = all
+    const fmt = logFormatSel.value; // "all" | "doubles" | "singles"
+
+    let log = sortGamesChronologically(currentGames).reverse();
+    if (player) {
+      log = log.filter(
+        (g) => g.team_a.includes(player) || g.team_b.includes(player),
+      );
+    }
+    if (fmt !== "all") log = log.filter((g) => g.format === fmt);
+
+    const hasGames = currentGames.length > 0;
+    logEmpty.classList.toggle("hidden", hasGames);
+    logNone.classList.toggle("hidden", !(hasGames && log.length === 0));
+
+    logBody.innerHTML = log
+      .map((g) => {
+        const aWon = g.score_a > g.score_b;
+        const teamA = escapeHtml(g.team_a.join(" & "));
+        const teamB = escapeHtml(g.team_b.join(" & "));
+        const aCls = aWon ? "font-bold text-white" : "text-neutral-400";
+        const bCls = !aWon ? "font-bold text-white" : "text-neutral-400";
+        return `
           <li class="flex items-center justify-between gap-3 border border-neutral-800 rounded-md px-3 py-2 text-sm">
             <div class="min-w-0">
               <span class="${aCls}">${teamA}</span>
@@ -432,11 +490,49 @@ import Layout from "../layouts/Layout.astro";
             <div class="flex items-center gap-3 shrink-0">
               <span class="tabular-nums"><span class="${aWon ? "text-white font-bold" : "text-neutral-500"}">${g.score_a}</span><span class="text-neutral-600">–</span><span class="${!aWon ? "text-white font-bold" : "text-neutral-500"}">${g.score_b}</span></span>
               <span class="text-neutral-600 text-xs">${escapeHtml(g.played_on)}</span>
+              <button type="button" class="del-btn text-neutral-600 hover:text-primary-500 transition-colors duration-100 px-1" data-id="${escapeHtml(g.id)}" title="Delete game" aria-label="Delete game">✕</button>
             </div>
           </li>`;
-        })
-        .join("");
+      })
+      .join("");
+  }
+
+  logPlayerSel.addEventListener("change", renderLog);
+  logFormatSel.addEventListener("change", renderLog);
+
+  // Delete a game (passcode-gated; RLS blocks direct anon deletes).
+  logBody.addEventListener("click", async (e) => {
+    const btn = (e.target as HTMLElement).closest(".del-btn") as HTMLElement | null;
+    if (!btn) return;
+    const id = btn.dataset.id!;
+    if (!confirm("Delete this game? Standings will recalculate.")) return;
+    const pass =
+      passcode.value || window.prompt("Passcode to delete this game?") || "";
+    if (!pass) return;
+
+    btn.textContent = "…";
+    const { error } = await supabase.rpc("delete_game", {
+      p_passcode: pass,
+      p_id: id,
+    });
+    if (error) {
+      alert(/passcode/i.test(error.message) ? "Wrong passcode." : `Error: ${error.message}`);
+      btn.textContent = "✕";
+      return;
     }
+    try {
+      localStorage.setItem(PASSCODE_KEY, pass);
+    } catch {}
+    await loadGames();
+  });
+
+  function render(games: Game[]) {
+    currentGames = games;
+    knownNames = allPlayerNames(games);
+    populateSelects(knownNames);
+    populateLogPlayerFilter(knownNames);
+    renderStandings();
+    renderLog();
   }
 
   // --- Data ---
