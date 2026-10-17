@@ -171,6 +171,10 @@ import Layout from "../layouts/Layout.astro";
     color: #fff;
     background: #1f2430;
   }
+  /* Dim the "Select player…" prompt so it reads as a placeholder, not a value. */
+  select.name-select.is-placeholder {
+    color: #737373;
+  }
 </style>
 
 <script>
@@ -230,7 +234,7 @@ import Layout from "../layouts/Layout.astro";
   // --- Player dropdowns ---
   function optionsHtml(names: string[]): string {
     return (
-      `<option value="">Player</option>` +
+      `<option value="" disabled selected>Select player…</option>` +
       names
         .map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
         .join("") +
@@ -238,14 +242,32 @@ import Layout from "../layouts/Layout.astro";
     );
   }
 
+  function updatePlaceholderClass(el: HTMLSelectElement) {
+    el.classList.toggle("is-placeholder", el.value === "");
+  }
+
   function populateSelects(names: string[]) {
     for (const s of SLOTS) {
       const el = sel(s);
       const prev = el.value;
       el.innerHTML = optionsHtml(names);
-      // Keep the current choice if it's still valid.
+      // Keep the current choice if it's still valid, else fall back to the prompt.
       if (prev === NEW_VALUE || names.includes(prev)) el.value = prev;
+      else el.selectedIndex = 0;
+      updatePlaceholderClass(el);
     }
+  }
+
+  function clearInvalid() {
+    for (const s of SLOTS) {
+      sel(s).classList.remove("!border-primary-500");
+      newInput(s).classList.remove("!border-primary-500");
+    }
+  }
+
+  function markInvalid(s: Slot) {
+    const control = sel(s).value === NEW_VALUE ? newInput(s) : sel(s);
+    control.classList.add("!border-primary-500");
   }
 
   function toggleNewInput(s: Slot) {
@@ -263,15 +285,22 @@ import Layout from "../layouts/Layout.astro";
 
   function resetSlots() {
     for (const s of SLOTS) {
-      sel(s).value = "";
+      sel(s).selectedIndex = 0;
+      updatePlaceholderClass(sel(s));
       const input = newInput(s);
       input.value = "";
       input.classList.add("hidden");
     }
+    clearInvalid();
   }
 
   for (const s of SLOTS) {
-    sel(s).addEventListener("change", () => toggleNewInput(s));
+    sel(s).addEventListener("change", () => {
+      toggleNewInput(s);
+      updatePlaceholderClass(sel(s));
+      clearInvalid();
+      clearMsg();
+    });
   }
 
   // --- Format toggle ---
@@ -286,7 +315,8 @@ import Layout from "../layouts/Layout.astro";
     partnerSlots.forEach((el) => el.classList.toggle("hidden", !doubles));
     if (!doubles) {
       for (const s of ["a2", "b2"] as Slot[]) {
-        sel(s).value = "";
+        sel(s).selectedIndex = 0;
+        updatePlaceholderClass(sel(s));
         newInput(s).value = "";
         newInput(s).classList.add("hidden");
       }
@@ -390,17 +420,21 @@ import Layout from "../layouts/Layout.astro";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearMsg();
+    clearInvalid();
+
+    const requiredSlots: Slot[] =
+      format === "doubles" ? ["a1", "a2", "b1", "b2"] : ["a1", "b1"];
+    const missing = requiredSlots.filter((s) => !readName(s));
+    if (missing.length > 0) {
+      missing.forEach(markInvalid);
+      setMsg("Select a player for each highlighted spot.", "error");
+      return;
+    }
 
     const teamA = [readName("a1"), format === "doubles" ? readName("a2") : ""]
       .filter(Boolean);
     const teamB = [readName("b1"), format === "doubles" ? readName("b2") : ""]
       .filter(Boolean);
-    const need = format === "doubles" ? 2 : 1;
-
-    if (teamA.length !== need || teamB.length !== need) {
-      setMsg(`Pick ${need} player${need > 1 ? "s" : ""} per team.`, "error");
-      return;
-    }
     const everyone = [...teamA, ...teamB].map((n) => n.toLowerCase());
     if (new Set(everyone).size !== everyone.length) {
       setMsg("Each player can only appear once.", "error");
