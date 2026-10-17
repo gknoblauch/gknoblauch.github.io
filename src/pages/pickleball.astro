@@ -12,141 +12,166 @@ import Layout from "../layouts/Layout.astro";
   title="Pickleball — Greg Knoblauch"
   description="Rankings, standings and a game log for our pickleball crew."
 >
-  <main class="text-white max-w-3xl mx-auto px-4 py-8 w-full">
-    <a
-      href="/"
-      class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
-    >
-      ← Back
-    </a>
+  <!-- main is the scroll container (body is fixed-height + centered). -->
+  <main class="w-screen h-screen overflow-y-auto text-white">
+    <div class="max-w-3xl mx-auto px-4 py-8 w-full">
+      <a
+        href="/"
+        class="inline-block mb-6 text-sm text-neutral-400 hover:text-white bg-darkslate-500 border border-neutral-700 hover:border-neutral-500 rounded-lg px-4 py-2 transition-colors duration-100"
+      >
+        ← Back
+      </a>
 
-    <h1 class="text-4xl font-black mb-1">🏓 Pickleball</h1>
-    <p class="text-neutral-400 mb-8">
-      Rankings for the crew. Ratings use a simplified Elo — beat stronger
-      players and you climb faster.
-    </p>
-
-    <!-- A shared datalist of known player names feeds every name input. -->
-    <datalist id="player-names"></datalist>
-
-    <!-- Standings -->
-    <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
-      <h2 class="text-xl font-bold mb-4">Standings</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-neutral-400 text-left border-b border-neutral-700">
-              <th class="py-2 pr-2 font-medium">#</th>
-              <th class="py-2 pr-2 font-medium">Player</th>
-              <th class="py-2 pr-2 font-medium text-right">Rating</th>
-              <th class="py-2 pr-2 font-medium text-right">W–L</th>
-              <th class="py-2 pr-2 font-medium text-right">Games</th>
-              <th class="py-2 font-medium text-right">Win%</th>
-            </tr>
-          </thead>
-          <tbody id="standings-body"></tbody>
-        </table>
-      </div>
-      <p id="standings-empty" class="text-neutral-500 text-sm hidden">
-        No games yet — add one below to get started.
+      <h1 class="text-4xl font-black mb-1">🏓 Pickleball</h1>
+      <p class="text-neutral-400 mb-8">
+        Rankings for the crew. Ratings use a simplified Elo — beat stronger
+        players and you climb faster.
       </p>
-      <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
-    </section>
 
-    <!-- Add a game -->
-    <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
-      <h2 class="text-xl font-bold mb-4">Add a game</h2>
-
-      <!-- Format toggle -->
-      <div class="grid grid-cols-2 gap-3 mb-5" id="format-toggle">
-        <button
-          type="button"
-          data-format="doubles"
-          class="format-btn bg-darkslate-700 border border-neutral-700 rounded-lg py-2 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
-        >Doubles</button>
-        <button
-          type="button"
-          data-format="singles"
-          class="format-btn bg-darkslate-700 border border-neutral-700 rounded-lg py-2 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
-        >Singles</button>
-      </div>
-
-      <form id="game-form" class="flex flex-col gap-5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Team A -->
-          <div class="border border-neutral-700 rounded-lg p-4">
-            <p class="text-sm text-neutral-400 mb-2">Team A</p>
-            <input
-              id="a1" type="text" placeholder="Player" autocomplete="off"
-              list="player-names"
-              class="w-full mb-2 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
-            />
-            <input
-              id="a2" type="text" placeholder="Partner" autocomplete="off"
-              list="player-names"
-              class="partner-input w-full mb-3 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
-            />
-            <label class="block text-xs text-neutral-500 mb-1">Score</label>
-            <input
-              id="score-a" type="number" min="0" step="1" inputmode="numeric"
-              class="w-24 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg tabular-nums"
-            />
-          </div>
-
-          <!-- Team B -->
-          <div class="border border-neutral-700 rounded-lg p-4">
-            <p class="text-sm text-neutral-400 mb-2">Team B</p>
-            <input
-              id="b1" type="text" placeholder="Player" autocomplete="off"
-              list="player-names"
-              class="w-full mb-2 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
-            />
-            <input
-              id="b2" type="text" placeholder="Partner" autocomplete="off"
-              list="player-names"
-              class="partner-input w-full mb-3 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
-            />
-            <label class="block text-xs text-neutral-500 mb-1">Score</label>
-            <input
-              id="score-b" type="number" min="0" step="1" inputmode="numeric"
-              class="w-24 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg tabular-nums"
-            />
-          </div>
+      <!-- Standings -->
+      <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
+        <h2 class="text-xl font-bold mb-4">Standings</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-neutral-400 text-left border-b border-neutral-700">
+                <th class="py-2 pr-2 font-medium">#</th>
+                <th class="py-2 pr-2 font-medium">Player</th>
+                <th class="py-2 pr-2 font-medium text-right">Rating</th>
+                <th class="py-2 pr-2 font-medium text-right">W–L</th>
+                <th class="py-2 pr-2 font-medium text-right">Games</th>
+                <th class="py-2 font-medium text-right">Win%</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body"></tbody>
+          </table>
         </div>
+        <p id="standings-empty" class="text-neutral-500 text-sm hidden">
+          No games yet — add one below to get started.
+        </p>
+        <p id="standings-loading" class="text-neutral-500 text-sm">Loading…</p>
+      </section>
 
-        <div class="flex flex-wrap gap-4 items-end">
-          <div>
-            <label class="block text-xs text-neutral-500 mb-1" for="played-on">Date</label>
-            <input
-              id="played-on" type="date"
-              class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-500 mb-1" for="passcode">Passcode</label>
-            <input
-              id="passcode" type="password" autocomplete="off" placeholder="to record"
-              class="w-32 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
-            />
-          </div>
+      <!-- Add a game -->
+      <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700 mb-6">
+        <h2 class="text-xl font-bold mb-4">Add a game</h2>
+
+        <!-- Format toggle -->
+        <div class="grid grid-cols-2 gap-3 mb-5" id="format-toggle">
           <button
-            id="submit-btn" type="submit"
-            class="ml-auto bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg px-5 py-2 transition-colors duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
-          >Add game</button>
+            type="button"
+            data-format="doubles"
+            class="format-btn bg-darkslate-700 border border-neutral-700 rounded-lg py-2 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+          >Doubles</button>
+          <button
+            type="button"
+            data-format="singles"
+            class="format-btn bg-darkslate-700 border border-neutral-700 rounded-lg py-2 text-sm font-semibold transition-colors duration-100 hover:border-neutral-500"
+          >Singles</button>
         </div>
 
-        <p id="form-msg" class="text-sm hidden"></p>
-      </form>
-    </section>
+        <form id="game-form" class="flex flex-col gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Team A -->
+            <div class="border border-neutral-700 rounded-lg p-4">
+              <p class="text-sm text-neutral-400 mb-2">Team A</p>
+              <div class="name-slot mb-2" data-slot="a1">
+                <select id="a1-sel" class="name-select w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"></select>
+                <input id="a1-new" type="text" placeholder="New player name" autocomplete="off" class="name-new hidden mt-2 w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white" />
+              </div>
+              <div class="name-slot partner-slot mb-3" data-slot="a2">
+                <select id="a2-sel" class="name-select w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"></select>
+                <input id="a2-new" type="text" placeholder="New partner name" autocomplete="off" class="name-new hidden mt-2 w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white" />
+              </div>
+              <label class="block text-xs text-neutral-500 mb-1" for="score-a">Score</label>
+              <input
+                id="score-a" type="number" min="0" step="1" inputmode="numeric"
+                class="w-24 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg tabular-nums"
+              />
+            </div>
 
-    <!-- Game log -->
-    <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
-      <h2 class="text-xl font-bold mb-4">Game log</h2>
-      <ul id="log-body" class="flex flex-col gap-2"></ul>
-      <p id="log-empty" class="text-neutral-500 text-sm hidden">No games logged yet.</p>
-    </section>
+            <!-- Team B -->
+            <div class="border border-neutral-700 rounded-lg p-4">
+              <p class="text-sm text-neutral-400 mb-2">Team B</p>
+              <div class="name-slot mb-2" data-slot="b1">
+                <select id="b1-sel" class="name-select w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"></select>
+                <input id="b1-new" type="text" placeholder="New player name" autocomplete="off" class="name-new hidden mt-2 w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white" />
+              </div>
+              <div class="name-slot partner-slot mb-3" data-slot="b2">
+                <select id="b2-sel" class="name-select w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"></select>
+                <input id="b2-new" type="text" placeholder="New partner name" autocomplete="off" class="name-new hidden mt-2 w-full bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white" />
+              </div>
+              <label class="block text-xs text-neutral-500 mb-1" for="score-b">Score</label>
+              <input
+                id="score-b" type="number" min="0" step="1" inputmode="numeric"
+                class="w-24 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white text-lg tabular-nums"
+              />
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-4 items-end">
+            <div>
+              <label class="block text-xs text-neutral-500 mb-1" for="played-on">Date</label>
+              <input
+                id="played-on" type="date"
+                class="bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-500 mb-1" for="passcode">Passcode</label>
+              <input
+                id="passcode" type="password" autocomplete="off" placeholder="to record"
+                class="w-32 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
+              />
+            </div>
+            <button
+              id="submit-btn" type="submit"
+              class="ml-auto bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg px-5 py-2 transition-colors duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >Add game</button>
+          </div>
+
+          <p id="form-msg" class="text-sm hidden"></p>
+        </form>
+      </section>
+
+      <!-- Game log -->
+      <section class="bg-darkslate-500 rounded-lg p-6 border border-neutral-700">
+        <h2 class="text-xl font-bold mb-4">Game log</h2>
+        <ul id="log-body" class="flex flex-col gap-2"></ul>
+        <p id="log-empty" class="text-neutral-500 text-sm hidden">No games logged yet.</p>
+      </section>
+    </div>
   </main>
 </Layout>
+
+<style>
+  /* Hide native number spinners so the score fields match the dark theme. */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* Themed dropdown chevron so <select> matches the inputs. */
+  select.name-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem;
+    padding-right: 2.2rem;
+  }
+  select.name-select option {
+    color: #fff;
+    background: #1f2430;
+  }
+</style>
 
 <script>
   import { supabase, SUPABASE_URL } from "../lib/supabase";
@@ -158,6 +183,9 @@ import Layout from "../layouts/Layout.astro";
   } from "../lib/pickleball";
 
   const PASSCODE_KEY = "pickleball-passcode";
+  const NEW_VALUE = "__new__";
+  const SLOTS = ["a1", "a2", "b1", "b2"] as const;
+  type Slot = (typeof SLOTS)[number];
 
   // --- Elements ---
   const standingsBody = document.getElementById("standings-body")!;
@@ -165,19 +193,14 @@ import Layout from "../layouts/Layout.astro";
   const standingsLoading = document.getElementById("standings-loading")!;
   const logBody = document.getElementById("log-body")!;
   const logEmpty = document.getElementById("log-empty")!;
-  const datalist = document.getElementById("player-names")!;
 
   const form = document.getElementById("game-form") as HTMLFormElement;
   const formBtns = Array.from(
     document.querySelectorAll<HTMLButtonElement>(".format-btn"),
   );
-  const partnerInputs = Array.from(
-    document.querySelectorAll<HTMLInputElement>(".partner-input"),
+  const partnerSlots = Array.from(
+    document.querySelectorAll<HTMLElement>(".partner-slot"),
   );
-  const a1 = document.getElementById("a1") as HTMLInputElement;
-  const a2 = document.getElementById("a2") as HTMLInputElement;
-  const b1 = document.getElementById("b1") as HTMLInputElement;
-  const b2 = document.getElementById("b2") as HTMLInputElement;
   const scoreA = document.getElementById("score-a") as HTMLInputElement;
   const scoreB = document.getElementById("score-b") as HTMLInputElement;
   const playedOn = document.getElementById("played-on") as HTMLInputElement;
@@ -185,7 +208,11 @@ import Layout from "../layouts/Layout.astro";
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
   const formMsg = document.getElementById("form-msg")!;
 
+  const sel = (s: Slot) => document.getElementById(`${s}-sel`) as HTMLSelectElement;
+  const newInput = (s: Slot) => document.getElementById(`${s}-new`) as HTMLInputElement;
+
   let format: "doubles" | "singles" = "doubles";
+  let knownNames: string[] = [];
 
   // --- Defaults ---
   playedOn.value = new Date().toISOString().slice(0, 10);
@@ -193,6 +220,59 @@ import Layout from "../layouts/Layout.astro";
     const saved = localStorage.getItem(PASSCODE_KEY);
     if (saved) passcode.value = saved;
   } catch {}
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+  }
+
+  // --- Player dropdowns ---
+  function optionsHtml(names: string[]): string {
+    return (
+      `<option value="">Player</option>` +
+      names
+        .map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`)
+        .join("") +
+      `<option value="${NEW_VALUE}">➕ New player…</option>`
+    );
+  }
+
+  function populateSelects(names: string[]) {
+    for (const s of SLOTS) {
+      const el = sel(s);
+      const prev = el.value;
+      el.innerHTML = optionsHtml(names);
+      // Keep the current choice if it's still valid.
+      if (prev === NEW_VALUE || names.includes(prev)) el.value = prev;
+    }
+  }
+
+  function toggleNewInput(s: Slot) {
+    const isNew = sel(s).value === NEW_VALUE;
+    const input = newInput(s);
+    input.classList.toggle("hidden", !isNew);
+    if (isNew) input.focus();
+    else input.value = "";
+  }
+
+  function readName(s: Slot): string {
+    const el = sel(s);
+    return el.value === NEW_VALUE ? newInput(s).value.trim() : el.value;
+  }
+
+  function resetSlots() {
+    for (const s of SLOTS) {
+      sel(s).value = "";
+      const input = newInput(s);
+      input.value = "";
+      input.classList.add("hidden");
+    }
+  }
+
+  for (const s of SLOTS) {
+    sel(s).addEventListener("change", () => toggleNewInput(s));
+  }
 
   // --- Format toggle ---
   function renderFormat() {
@@ -203,10 +283,13 @@ import Layout from "../layouts/Layout.astro";
       btn.classList.toggle("text-white", active);
     });
     const doubles = format === "doubles";
-    partnerInputs.forEach((el) => el.classList.toggle("hidden", !doubles));
+    partnerSlots.forEach((el) => el.classList.toggle("hidden", !doubles));
     if (!doubles) {
-      a2.value = "";
-      b2.value = "";
+      for (const s of ["a2", "b2"] as Slot[]) {
+        sel(s).value = "";
+        newInput(s).value = "";
+        newInput(s).classList.add("hidden");
+      }
     }
   }
   formBtns.forEach((btn) =>
@@ -228,17 +311,9 @@ import Layout from "../layouts/Layout.astro";
     formMsg.textContent = "";
   }
 
-  function escapeHtml(s: string): string {
-    return s.replace(/[&<>"']/g, (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
-    );
-  }
-
   function render(games: Game[]) {
-    // Datalist of known names.
-    datalist.innerHTML = allPlayerNames(games)
-      .map((n) => `<option value="${escapeHtml(n)}"></option>`)
-      .join("");
+    knownNames = allPlayerNames(games);
+    populateSelects(knownNames);
 
     // Standings.
     const standings = computeStandings(games);
@@ -316,14 +391,14 @@ import Layout from "../layouts/Layout.astro";
     e.preventDefault();
     clearMsg();
 
-    const teamA = [a1.value.trim(), format === "doubles" ? a2.value.trim() : ""]
+    const teamA = [readName("a1"), format === "doubles" ? readName("a2") : ""]
       .filter(Boolean);
-    const teamB = [b1.value.trim(), format === "doubles" ? b2.value.trim() : ""]
+    const teamB = [readName("b1"), format === "doubles" ? readName("b2") : ""]
       .filter(Boolean);
     const need = format === "doubles" ? 2 : 1;
 
     if (teamA.length !== need || teamB.length !== need) {
-      setMsg(`Enter ${need} name${need > 1 ? "s" : ""} per team.`, "error");
+      setMsg(`Pick ${need} player${need > 1 ? "s" : ""} per team.`, "error");
       return;
     }
     const everyone = [...teamA, ...teamB].map((n) => n.toLowerCase());
@@ -372,8 +447,8 @@ import Layout from "../layouts/Layout.astro";
       localStorage.setItem(PASSCODE_KEY, passcode.value);
     } catch {}
 
-    // Clear names/scores for the next entry; keep date & passcode.
-    a1.value = a2.value = b1.value = b2.value = "";
+    // Clear players/scores for the next entry; keep date & passcode.
+    resetSlots();
     scoreA.value = scoreB.value = "";
     setMsg("Game added ✓", "ok");
     await loadGames();
