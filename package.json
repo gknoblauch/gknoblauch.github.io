@@ -27,7 +27,7 @@
     "mdast-util-to-string": "^4.0.0",
     "motion": "^12.40.0",
     "reading-time": "^1.5.0",
-    "solid-js": "^1.9.13",
+    "solid-js": "^1.9.17",
     "svelte": "^5.56.3"
   },
   "devDependencies": {
