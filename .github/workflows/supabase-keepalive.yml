@@ -11,6 +11,8 @@ on:
     - cron: "17 8 * * *" # daily at 08:17 UTC (off the hour, per GitHub's advice)
   workflow_dispatch: {} # allow manual runs from the Actions tab
 
+permissions: {}
+
 jobs:
   ping:
     runs-on: ubuntu-latest
