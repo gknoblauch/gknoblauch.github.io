@@ -140,7 +140,8 @@ import Layout from "../layouts/Layout.astro";
             <div>
               <label class="block text-xs text-neutral-500 mb-1" for="passcode">Passcode</label>
               <input
-                id="passcode" type="password" autocomplete="off" placeholder="to record"
+                id="passcode" type="password" autocomplete="off" autocapitalize="off"
+                autocorrect="off" spellcheck="false" placeholder="to record"
                 class="w-32 bg-darkslate-700 border border-neutral-700 focus:border-primary-500 focus:outline-none rounded-md px-3 py-2 text-white"
               />
             </div>
@@ -270,8 +271,12 @@ import Layout from "../layouts/Layout.astro";
   playedOn.value = new Date().toISOString().slice(0, 10);
   try {
     const saved = localStorage.getItem(PASSCODE_KEY);
-    if (saved) passcode.value = saved;
+    if (saved) passcode.value = saved.trim();
   } catch {}
+
+  // Match only the server's own "Invalid passcode" error, so other failures
+  // (e.g. a missing function, whose message mentions p_passcode) show as-is.
+  const isWrongPasscode = (msg: string) => /^invalid passcode$/i.test(msg);
 
   function escapeHtml(s: string): string {
     return s.replace(/[&<>"']/g, (c) =>
@@ -506,8 +511,9 @@ import Layout from "../layouts/Layout.astro";
     if (!btn) return;
     const id = btn.dataset.id!;
     if (!confirm("Delete this game? Standings will recalculate.")) return;
-    const pass =
-      passcode.value || window.prompt("Passcode to delete this game?") || "";
+    const pass = (
+      passcode.value || window.prompt("Passcode to delete this game?") || ""
+    ).trim();
     if (!pass) return;
 
     btn.textContent = "…";
@@ -516,7 +522,7 @@ import Layout from "../layouts/Layout.astro";
       p_id: id,
     });
     if (error) {
-      alert(/passcode/i.test(error.message) ? "Wrong passcode." : `Error: ${error.message}`);
+      alert(isWrongPasscode(error.message) ? "Wrong passcode." : `Error: ${error.message}`);
       btn.textContent = "✕";
       return;
     }
@@ -586,6 +592,7 @@ import Layout from "../layouts/Layout.astro";
       setMsg("Scores can't be tied.", "error");
       return;
     }
+    passcode.value = passcode.value.trim();
     if (!passcode.value) {
       setMsg("Passcode required to record a game.", "error");
       return;
@@ -608,7 +615,7 @@ import Layout from "../layouts/Layout.astro";
     submitBtn.textContent = "Add game";
 
     if (error) {
-      const wrongPass = /passcode/i.test(error.message);
+      const wrongPass = isWrongPasscode(error.message);
       setMsg(wrongPass ? "Wrong passcode." : `Error: ${error.message}`, "error");
       return;
     }
