@@ -1,14 +1,24 @@
 name: Supabase keep-alive
 
-# Free-tier Supabase projects auto-pause after 7 days of inactivity. This runs a
-# tiny read against the REST API once a day so the pickleball project stays
-# active between games. Only takes effect once this file is on the default
-# branch. Note: GitHub disables scheduled workflows after ~60 days with no repo
-# commits — harmless here, and a paused project unpauses in one click anyway.
+# Free-tier Supabase projects auto-pause after 7 days of too little activity.
+# A once-a-day read of the games table returned 200 every day but still was
+# not enough: the project was paused anyway (Nov 2026). So this now runs four
+# times a day at irregular, randomly delayed times and, besides the read, calls the keepalive() function (see
+# supabase-keepalive.sql), which makes a real write to the database.
+#
+# If the project is paused or keepalive() is missing, the job fails, and GitHub
+# emails a notice about the failed scheduled run, so a pause no longer goes
+# unnoticed. Note: GitHub disables scheduled workflows after ~60 days with no
+# repo commits; re-enable it from the Actions tab if that happens.
 
 on:
   schedule:
-    - cron: "17 8 * * *" # daily at 08:17 UTC (off the hour, per GitHub's advice)
+    # Four uneven slots a day (UTC), so runs aren't on a neat 6-hour grid; the
+    # random delay below shifts each one further.
+    - cron: "43 2 * * *"
+    - cron: "11 9 * * *"
+    - cron: "37 14 * * *"
+    - cron: "6 20 * * *"
   workflow_dispatch: {} # allow manual runs from the Actions tab
 
 permissions: {}
@@ -16,21 +26,46 @@ permissions: {}
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
-      - name: Ping Supabase REST API
+      - name: Random delay (scheduled runs only)
+        if: github.event_name == 'schedule'
+        run: |
+          delay=$(( RANDOM % 3600 ))  # 0-59 minutes
+          echo "Sleeping ${delay}s"
+          sleep "$delay"
+
+      - name: Ping Supabase (read + heartbeat write)
         # The anon key is a public, publishable key (already shipped in the site
         # at src/lib/supabase.ts); row-level security protects the data.
         env:
           SUPABASE_URL: https://bxgrzgbelxuisjhiucts.supabase.co
           SUPABASE_ANON_KEY: sb_publishable_-bTe9bRelo-7Ej6U3MGpsA_rf1oMrBv
         run: |
-          code=$(curl -sS -o /dev/null -w "%{http_code}" \
+          fail=0
+          check() { # $1 = label, $2 = HTTP status
+            echo "$1: HTTP $2"
+            case "$2" in 2*) ;; *) fail=1 ;; esac
+          }
+
+          read_code=$(curl -sS -o /dev/null -w "%{http_code}" \
             "${SUPABASE_URL}/rest/v1/games?select=id&limit=1" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
-          echo "Supabase responded with HTTP ${code}"
-          # 2xx means the query ran (activity recorded); anything else fails the job.
-          case "$code" in
-            2*) echo "Keep-alive OK" ;;
-            *) echo "Unexpected status ${code}" >&2; exit 1 ;;
-          esac
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Cache-Control: no-cache") || read_code=000
+          check "Read games" "$read_code"
+
+          write_code=$(curl -sS -o /tmp/rpc.out -w "%{http_code}" -X POST \
+            "${SUPABASE_URL}/rest/v1/rpc/keepalive" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{}') || write_code=000
+          check "Heartbeat write" "$write_code"
+          cat /tmp/rpc.out 2>/dev/null; echo
+
+          if [ "$fail" -ne 0 ]; then
+            echo "Keep-alive failed: the project may be paused, or supabase-keepalive.sql has not been run." >&2
+            exit 1
+          fi
+          echo "Keep-alive OK"
