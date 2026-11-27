@@ -7,8 +7,6 @@ import solidJs from "@astrojs/solid-js";
 import { unified } from "@astrojs/markdown-remark";
 import { remarkReadingTime } from "./src/lib/remark-reading-time.mjs";
 
-import svelte from "@astrojs/svelte";
-
 // https://astro.build/config
 export default defineConfig({
   site: "https://gknob.ca/",
@@ -17,13 +15,9 @@ export default defineConfig({
     solidJs(),
     UnoCSS({ injectReset: true }),
     icon(),
-    svelte(),
   ],
   markdown: {
     processor: unified({ remarkPlugins: [remarkReadingTime] }),
   },
   output: "static",
-  vite: {
-    assetsInclude: "**/*.riv",
-  },
 });
