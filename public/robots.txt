@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: https://gknob.ca/sitemap-index.xml
+Sitemap: https://gknob.ca/sitemap-0.xml
